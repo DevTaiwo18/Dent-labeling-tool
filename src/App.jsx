@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Menu, X, Wrench, Home, ChevronRight } from 'lucide-react';
 import MainPage from './pages/MainPage';
 import DentAnalysisTool from './components/DentAnalysisTool';
+import DentDetection from './components/DentDetection';
 const NavLink = ({ to, children, icon: Icon }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -41,6 +42,7 @@ const MobileNav = ({ isOpen, setIsOpen }) => (
       <nav className="flex flex-col gap-2 p-4">
         <NavLink to="/" icon={Home}>Home</NavLink>
         <NavLink to="/label" icon={Wrench}>Labeling Tool</NavLink>
+        <NavLink to="/display" icon={Wrench}>Overlay Display</NavLink>
       </nav>
     </div>
     <div 
@@ -70,6 +72,7 @@ function Navigation() {
             <div className="hidden md:flex md:ml-10 md:space-x-4">
               <NavLink to="/" icon={Home}>Home</NavLink>
               <NavLink to="/label" icon={Wrench}>Labeling Tool</NavLink>
+              <NavLink to="/display" icon={Wrench}>Overlay Display</NavLink>
             </div>
           </div>
 
@@ -101,6 +104,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/label" element={<DentAnalysisTool />} />
+            <Route path="/display" element={<DentDetection />} />
           </Routes>
         </main>
       </div>
