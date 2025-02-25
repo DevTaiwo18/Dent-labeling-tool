@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info } from 'lucide-react';
+import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info, Trash2, Edit3 } from 'lucide-react';
 
 const API_ENDPOINT = 'https://racial-ivette-jmccottry-c0386bc9.koyeb.app';
 
@@ -18,26 +18,26 @@ const SCALE_STEP = 0.2;
 // Modal component for instructions
 const InstructionModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
-    
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">Drawing Instructions</h2>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="text-gray-500 hover:text-gray-700"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
-                
+
                 <div className="space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg flex gap-3">
                         <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                         <p className="text-blue-700">Follow these steps to properly mark dents on your image.</p>
                     </div>
-                    
+
                     <ol className="space-y-3 pl-5 list-decimal">
                         <li className="pl-2">
                             <span className="font-medium">Select a dent category</span>
@@ -52,11 +52,11 @@ const InstructionModal = ({ isOpen, onClose }) => {
                             <p className="text-gray-600 text-sm mt-1">When you release the mouse button, the dent will be created and added to your analysis.</p>
                         </li>
                         <li className="pl-2">
-                            <span className="font-medium">Add more as needed</span>
-                            <p className="text-gray-600 text-sm mt-1">You can continue adding more dents or click on existing ones to see their details.</p>
+                            <span className="font-medium">Automatic saving</span>
+                            <p className="text-gray-600 text-sm mt-1">Your drawing will be automatically saved when you finish drawing each dent.</p>
                         </li>
                     </ol>
-                    
+
                     <div className="mt-6 flex justify-end">
                         <button
                             onClick={onClose}
@@ -72,25 +72,25 @@ const InstructionModal = ({ isOpen, onClose }) => {
 };
 
 // Drawing Canvas component for manual dent marking
-const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }) => {
+const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, onFinishDrawing }) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
     const [currentRect, setCurrentRect] = useState(null);
     const canvasRef = useRef(null);
-    
+
     const getCanvasCoordinates = (e) => {
         if (!canvasRef.current) return { x: 0, y: 0 };
-        
+
         const rect = canvasRef.current.getBoundingClientRect();
         return {
             x: (e.clientX - rect.left - position.x) / scale,
             y: (e.clientY - rect.top - position.y) / scale
         };
     };
-    
+
     const handleMouseDown = (e) => {
         if (!currentCategory) return;
-        
+
         e.stopPropagation(); // Prevent parent container's drag
         setIsDrawing(true);
         const point = getCanvasCoordinates(e);
@@ -102,12 +102,12 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }
             height: 0
         });
     };
-    
+
     const handleMouseMove = (e) => {
         if (!isDrawing || !currentRect) return;
-        
+
         const currentPoint = getCanvasCoordinates(e);
-        
+
         setCurrentRect({
             x: Math.min(startPoint.x, currentPoint.x),
             y: Math.min(startPoint.y, currentPoint.y),
@@ -115,31 +115,34 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }
             height: Math.abs(currentPoint.y - startPoint.y)
         });
     };
-    
+
     const handleMouseUp = () => {
         if (!isDrawing || !currentRect || !currentCategory) return;
-        
+
         // Only add if the rect has some size
         if (currentRect.width > 5 && currentRect.height > 5) {
             // Convert rectangle to dent format
             const newDent = {
                 center: {
-                    x: currentRect.x + currentRect.width/2,
-                    y: currentRect.y + currentRect.height/2
+                    x: currentRect.x + currentRect.width / 2,
+                    y: currentRect.y + currentRect.height / 2
                 },
                 x_size: currentRect.width,
                 y_size: currentRect.height,
                 category: currentCategory
             };
-            
+
             onAddDent(newDent);
+
+            // Auto-save after drawing is complete
+            onFinishDrawing();
         }
-        
+
         // Reset drawing state
         setIsDrawing(false);
         setCurrentRect(null);
     };
-    
+
     // Clean up if mouse leaves canvas
     const handleMouseLeave = () => {
         if (isDrawing) {
@@ -147,9 +150,9 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }
             setCurrentRect(null);
         }
     };
-    
+
     return (
-        <div 
+        <div
             ref={canvasRef}
             className="absolute inset-0 z-10"
             onMouseDown={handleMouseDown}
@@ -158,7 +161,7 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }
             onMouseLeave={handleMouseLeave}
         >
             {currentRect && isDrawing && (
-                <div 
+                <div
                     className="absolute border-2 bg-opacity-30"
                     style={{
                         left: `${(currentRect.x * scale) + position.x}px`,
@@ -174,13 +177,13 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory }
     );
 };
 
-// Updated DentOverlay with scale-aware dimensions
-const DentOverlay = ({ dent, category, imageSize, isSelected, onSelect, scale }) => {
+// Updated DentOverlay with removed edit and delete buttons
+const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, scale, scrollToTop }) => {
     const EXPANSION_FACTOR = 1.2;
-    
+
     const getBoundedPosition = (center, size, maxSize) => {
         const expandedSize = size * EXPANSION_FACTOR;
-        let position = center - (expandedSize/2);
+        let position = center - (expandedSize / 2);
         position = Math.max(0, Math.min(position, maxSize - expandedSize));
         return position;
     };
@@ -189,7 +192,23 @@ const DentOverlay = ({ dent, category, imageSize, isSelected, onSelect, scale })
     const expandedYSize = dent.y_size * EXPANSION_FACTOR;
     const left = getBoundedPosition(dent.center.x, dent.x_size, imageSize.width);
     const top = getBoundedPosition(dent.center.y, dent.y_size, imageSize.height);
-    
+
+    // Determine if this is a manual dent
+    const isManualDent = dentId && dentId.startsWith('manual-');
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        onSelect?.();
+
+        // Scroll to top when dent is selected to show details
+        if (scrollToTop) {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    };
+
     return (
         <div
             className="absolute group cursor-pointer"
@@ -198,15 +217,12 @@ const DentOverlay = ({ dent, category, imageSize, isSelected, onSelect, scale })
                 top: `${top}px`,
                 width: `${expandedXSize}px`,
                 height: `${expandedYSize}px`,
-                border: `${3/scale}px solid ${category.color}`,
+                border: `${3 / scale}px solid ${category.color}`,
                 backgroundColor: `${category.color}22`,
                 transition: 'background-color 0.2s ease-in-out',
-                boxShadow: isSelected ? `0 0 0 ${2/scale}px white, 0 0 0 ${4/scale}px ${category.color}` : 'none'
+                boxShadow: isSelected ? `0 0 0 ${2 / scale}px white, 0 0 0 ${4 / scale}px ${category.color}` : 'none'
             }}
-            onClick={(e) => {
-                e.stopPropagation();
-                onSelect?.();
-            }}
+            onClick={handleClick}
             onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = `${category.color}44`;
             }}
@@ -215,72 +231,72 @@ const DentOverlay = ({ dent, category, imageSize, isSelected, onSelect, scale })
             }}
         >
             {/* Center point marker */}
-            <div 
+            <div
                 className="absolute rounded-full border-2 border-white"
                 style={{
-                    left: `${expandedXSize/2 - (4/scale)}px`,
-                    top: `${expandedYSize/2 - (4/scale)}px`,
-                    width: `${8/scale}px`,
-                    height: `${8/scale}px`,
+                    left: `${expandedXSize / 2 - (4 / scale)}px`,
+                    top: `${expandedYSize / 2 - (4 / scale)}px`,
+                    width: `${8 / scale}px`,
+                    height: `${8 / scale}px`,
                     backgroundColor: category.color,
-                    boxShadow: `0 0 ${3/scale}px rgba(0,0,0,0.5)`
+                    boxShadow: `0 0 ${3 / scale}px rgba(0,0,0,0.5)`
                 }}
             />
-            
+
             {/* Always show location info, make it more visible on hover/select */}
-            <div 
+            <div
                 className={`absolute -top-6 left-0 px-2 py-1 rounded text-xs whitespace-nowrap transition-opacity duration-200
                     ${isSelected || dent.hover ? 'opacity-100' : 'opacity-75'}`}
                 style={{
                     backgroundColor: isSelected ? category.color : `${category.color}dd`,
                     color: 'white',
-                    transform: `scale(${1/scale})`,
+                    transform: `scale(${1 / scale})`,
                     transformOrigin: 'bottom left'
                 }}
             >
                 {Math.round(dent.center.x)}, {Math.round(dent.center.y)}
             </div>
-            
+
             {/* Add size info below the box */}
-            <div 
+            <div
                 className={`absolute -bottom-6 left-0 px-2 py-1 rounded text-xs whitespace-nowrap transition-opacity duration-200
                     ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-75'}`}
                 style={{
                     backgroundColor: `${category.color}dd`,
                     color: 'white',
-                    transform: `scale(${1/scale})`,
+                    transform: `scale(${1 / scale})`,
                     transformOrigin: 'top left'
                 }}
             >
                 {Math.round(dent.x_size)}x{Math.round(dent.y_size)}px
             </div>
-            
+
             {/* X and Y axis lines (only show when selected) */}
             {isSelected && (
                 <>
                     {/* X-axis line */}
-                    <div 
+                    <div
                         className="absolute bg-white opacity-70"
                         style={{
                             left: 0,
-                            top: `${expandedYSize/2 - (1/scale)}px`,
-                            width: '100%', 
-                            height: `${2/scale}px`,
-                            borderLeft: `${2/scale}px dashed ${category.color}`,
-                            borderRight: `${2/scale}px dashed ${category.color}`
+                            top: `${expandedYSize / 2 - (1 / scale)}px`,
+                            width: '100%',
+                            height: `${2 / scale}px`,
+                            borderLeft: `${2 / scale}px dashed ${category.color}`,
+                            borderRight: `${2 / scale}px dashed ${category.color}`
                         }}
                     />
-                    
+
                     {/* Y-axis line */}
-                    <div 
+                    <div
                         className="absolute bg-white opacity-70"
                         style={{
                             top: 0,
-                            left: `${expandedXSize/2 - (1/scale)}px`,
-                            height: '100%', 
-                            width: `${2/scale}px`,
-                            borderTop: `${2/scale}px dashed ${category.color}`,
-                            borderBottom: `${2/scale}px dashed ${category.color}`
+                            left: `${expandedXSize / 2 - (1 / scale)}px`,
+                            height: '100%',
+                            width: `${2 / scale}px`,
+                            borderTop: `${2 / scale}px dashed ${category.color}`,
+                            borderBottom: `${2 / scale}px dashed ${category.color}`
                         }}
                     />
                 </>
@@ -290,19 +306,41 @@ const DentOverlay = ({ dent, category, imageSize, isSelected, onSelect, scale })
 };
 
 // New component for displaying dent details
-const DentDetails = ({ dent, category }) => {
+const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
     if (!dent) return null;
+
+    // Check if this is a manual dent (can be edited or deleted)
+    const isManualDent = dentId && dentId.startsWith('manual-');
 
     return (
         <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
-            <div className="flex items-center gap-2">
-                <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: DENT_CATEGORIES[category].color }} 
-                />
-                <span className="font-semibold">{DENT_CATEGORIES[category].label} Dent</span>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: DENT_CATEGORIES[category].color }}
+                    />
+                    <span className="font-semibold">{DENT_CATEGORIES[category].label} Dent</span>
+                </div>
+
+                {isManualDent && (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => onEdit(dentId)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        >
+                            <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => onDelete(dentId)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
             </div>
-            
+
             <div className="space-y-4">
                 <div>
                     <div className="text-sm text-gray-500 mb-1">Center Position</div>
@@ -317,7 +355,7 @@ const DentDetails = ({ dent, category }) => {
                         </div>
                     </div>
                 </div>
-                
+
                 <div>
                     <div className="text-sm text-gray-500 mb-1">Dimensions</div>
                     <div className="bg-white p-3 rounded border border-gray-200">
@@ -345,6 +383,70 @@ const DentDetails = ({ dent, category }) => {
     );
 };
 
+// Save annotation dialog
+const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
+    if (!isOpen) return null;
+
+    const [filename, setFilename] = useState('dent-analysis');
+
+    const handleSave = () => {
+        onSave(filename);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Save Annotation</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Filename
+                        </label>
+                        <input
+                            type="text"
+                            value={filename}
+                            onChange={(e) => setFilename(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Enter filename without extension"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            File will be saved with .json extension
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={onClose}
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
+                            >
+                                <Save className="w-4 h-4" />
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const DentDetection = () => {
     const [scale, setScale] = useState(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -357,15 +459,17 @@ const DentDetection = () => {
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [selectedDent, setSelectedDent] = useState(null);
     const [filterCategory, setFilterCategory] = useState(null);
-    
+
     // Drawing mode states
     const [isDrawingMode, setIsDrawingMode] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [manualDents, setManualDents] = useState({});
     const [nextDentId, setNextDentId] = useState(1);
-    
-    // Modal state
+
+    // Modal states
     const [showInstructionModal, setShowInstructionModal] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     const containerRef = useRef(null);
     const imageRef = useRef(null);
@@ -375,7 +479,7 @@ const DentDetection = () => {
         const { naturalWidth, naturalHeight } = event.target;
         setImageSize({ width: naturalWidth, height: naturalHeight });
         setScale(1); // Always start at 100% zoom
-        
+
         // Center the image
         if (containerRef.current) {
             const container = containerRef.current;
@@ -428,6 +532,51 @@ const DentDetection = () => {
         }));
         setNextDentId(prev => prev + 1);
         setSelectedDent(id);
+    };
+
+    // Edit a dent
+    const handleEditDent = (dentId) => {
+        if (!dentId || !dentId.startsWith('manual-')) return;
+
+        // Set selected dent and toggle edit mode
+        setSelectedDent(dentId);
+        setIsEditMode(true);
+    };
+
+    // Function to update dent properties
+    const updateDent = (dentId, property, value) => {
+        if (!dentId.startsWith('manual-')) return;
+
+        setManualDents(prev => {
+            const dent = { ...prev[dentId] };
+
+            // Handle nested properties like center.x
+            if (property.includes('.')) {
+                const [parent, child] = property.split('.');
+                dent[parent] = { ...dent[parent], [child]: parseFloat(value) };
+            } else {
+                // Handle direct properties
+                dent[property] = property === 'category' ? value : parseFloat(value);
+            }
+
+            return { ...prev, [dentId]: dent };
+        });
+    };
+
+    // Delete a dent
+    const handleDeleteDent = (dentId) => {
+        if (!dentId.startsWith('manual-')) return;
+
+        setManualDents(prev => {
+            const newDents = { ...prev };
+            delete newDents[dentId];
+            return newDents;
+        });
+
+        if (selectedDent === dentId) {
+            setSelectedDent(null);
+            setIsEditMode(false);
+        }
     };
 
     // Enhanced zoom behavior with smooth animation
@@ -490,35 +639,58 @@ const DentDetection = () => {
             setShowInstructionModal(true);
         }
         setIsDrawingMode(!isDrawingMode);
+        setIsEditMode(false); // Exit edit mode when toggling drawing mode
         if (!isDrawingMode && !selectedCategory) {
             // Set a default category when entering drawing mode
             setSelectedCategory(Object.keys(DENT_CATEGORIES)[0]);
         }
     };
 
-    const exportData = () => {
-        // Combine API and manual dents
-        const allDents = {
-            ...(overlayData?.dent_locations || {}),
-            ...manualDents
-        };
-        
-        const data = {
-            timestamp: new Date().toISOString(),
-            imageSize,
-            dents: allDents,
-            categories: overlayData?.dent_categories || {}
-        };
+    // Function to handle finishing drawing (auto-save)
+    const handleFinishDrawing = async () => {
+        try {
+            // Save the current annotations
+            await saveAnnotationToAPI();
+        } catch (error) {
+            console.error("Error auto-saving annotation:", error);
+        }
+    };
 
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'dent-analysis.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    // New function to save annotation to API endpoint
+    const saveAnnotationToAPI = async () => {
+        try {
+            // Format manual dents for the API
+            const dentData = Object.values(manualDents).map(dent => ({
+                center: { x: dent.center.x, y: dent.center.y },
+                x_size: dent.x_size,
+                y_size: dent.y_size,
+                category: dent.category
+            }));
+
+            // Send to API endpoint
+            const response = await fetch(`${API_ENDPOINT}/save-annotation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dentData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save annotation to API');
+            }
+
+            // If drawing is done, exit drawing mode
+            if (isDrawingMode) {
+                setIsDrawingMode(false);
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error saving annotation to API:', error);
+            setError('Failed to save annotation. Please try again.');
+            return false;
+        }
     };
 
     // Combine API and manual dents
@@ -534,16 +706,28 @@ const DentDetection = () => {
 
     const totalDents = Object.values(dentCounts).reduce((sum, count) => sum + count, 0);
 
-    const filteredDents = Object.entries(combinedDents);
+    // Filter dents based on selected category
+    const filteredDents = Object.entries(combinedDents)
+        .filter(([_, dent]) => !filterCategory || dent.category === filterCategory);
 
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Instructions Modal */}
-            <InstructionModal 
+            <InstructionModal
                 isOpen={showInstructionModal}
                 onClose={() => setShowInstructionModal(false)}
             />
-            
+
+            {/* Save Annotation Modal */}
+            <SaveAnnotationModal
+                isOpen={showSaveModal}
+                onClose={() => setShowSaveModal(false)}
+                onSave={(filename) => {
+                    saveAnnotation(filename);
+                    setShowSaveModal(false);
+                }}
+            />
+
             {/* Left Panel */}
             <div className="w-72 bg-white border-r border-gray-200 p-6 shadow-lg">
                 <div className="mb-8">
@@ -554,22 +738,142 @@ const DentDetection = () => {
                 {selectedDent && combinedDents[selectedDent] && (
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4">Selected Dent</h2>
-                        <DentDetails 
-                            dent={combinedDents[selectedDent]}
-                            category={combinedDents[selectedDent].category}
-                        />
+                        {isEditMode && selectedDent.startsWith('manual-') ? (
+                            <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="w-4 h-4 rounded-full"
+                                            style={{ backgroundColor: DENT_CATEGORIES[combinedDents[selectedDent].category].color }}
+                                        />
+                                        <span className="font-semibold">Edit Dent</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsEditMode(false)}
+                                        className="p-1 rounded hover:bg-gray-200 transition-colors duration-150"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Category
+                                        </label>
+                                        <select
+                                            value={combinedDents[selectedDent].category}
+                                            onChange={(e) => updateDent(selectedDent, 'category', e.target.value)}
+                                            className="w-full p-2 border border-gray-300 rounded-md"
+                                        >
+                                            {Object.entries(DENT_CATEGORIES).map(([key, { label }]) => (
+                                                <option key={key} value={key}>{label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Center Position
+                                        </label>
+                                        <div className="flex space-x-2">
+                                            <div className="w-1/2">
+                                                <label className="block text-xs text-gray-500">X</label>
+                                                <input
+                                                    type="number"
+                                                    value={Math.round(combinedDents[selectedDent].center.x)}
+                                                    onChange={(e) => updateDent(selectedDent, 'center.x', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                />
+                                            </div>
+                                            <div className="w-1/2">
+                                                <label className="block text-xs text-gray-500">Y</label>
+                                                <input
+                                                    type="number"
+                                                    value={Math.round(combinedDents[selectedDent].center.y)}
+                                                    onChange={(e) => updateDent(selectedDent, 'center.y', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Dimensions
+                                        </label>
+                                        <div className="flex space-x-2">
+                                            <div className="w-1/2">
+                                                <label className="block text-xs text-gray-500">Width</label>
+                                                <input
+                                                    type="number"
+                                                    value={Math.round(combinedDents[selectedDent].x_size)}
+                                                    onChange={(e) => updateDent(selectedDent, 'x_size', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                />
+                                            </div>
+                                            <div className="w-1/2">
+                                                <label className="block text-xs text-gray-500">Height</label>
+                                                <input
+                                                    type="number"
+                                                    value={Math.round(combinedDents[selectedDent].y_size)}
+                                                    onChange={(e) => updateDent(selectedDent, 'y_size', e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2 flex justify-between">
+                                        <button
+                                            onClick={() => handleDeleteDent(selectedDent)}
+                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg flex items-center gap-1 transition-colors duration-200"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
+                                        </button>
+                                        <button
+                                            onClick={() => setIsEditMode(false)}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg flex items-center gap-1 transition-colors duration-200"
+                                        >
+                                            <Save className="w-4 h-4" />
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <DentDetails
+                                dent={combinedDents[selectedDent]}
+                                category={combinedDents[selectedDent].category}
+                                dentId={selectedDent}
+                                onEdit={handleEditDent}
+                                onDelete={handleDeleteDent}
+                            />
+                        )}
                     </div>
                 )}
 
                 <div>
                     <h2 className="text-xl font-semibold mb-4">Categories</h2>
+
+                    {filterCategory !== null && (
+                        <button
+                            className="flex items-center justify-center w-full p-2 mb-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition-all duration-200 border border-blue-200"
+                            onClick={() => setFilterCategory(null)}
+                        >
+                            <X className="w-4 h-4 mr-2" />
+                            Reset Filter
+                        </button>
+                    )}
+
                     <div className="space-y-3">
                         {Object.entries(DENT_CATEGORIES).map(([key, { color, label }]) => (
-                            <div 
-                                key={key} 
+                            <div
+                                key={key}
                                 className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200
-                                    ${filterCategory === key ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
-                                    ${isDrawingMode && selectedCategory === key ? 'ring-2 ring-blue-500' : ''}`}
+                    ${filterCategory === key ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
+                    ${isDrawingMode && selectedCategory === key ? 'ring-2 ring-blue-500' : ''}`}
                                 onClick={() => {
                                     if (isDrawingMode) {
                                         setSelectedCategory(key);
@@ -579,7 +883,7 @@ const DentDetection = () => {
                                 }}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div 
+                                    <div
                                         className="w-5 h-5 rounded-full"
                                         style={{ backgroundColor: color }}
                                     />
@@ -592,10 +896,10 @@ const DentDetection = () => {
                 </div>
 
                 {selectedImage && (
-                    <div className="mt-8">
+                    <div className="mt-8 space-y-3">
                         <button
-                            onClick={exportData}
-                            className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg transition-colors duration-200"
+                            onClick={() => saveAnnotation()}
+                            className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-blue-200"
                         >
                             <Download className="w-5 h-5" />
                             Export Analysis
@@ -625,11 +929,11 @@ const DentDetection = () => {
                                     disabled={isLoading}
                                 />
                             </button>
-                            
+
                             {isDrawingMode && selectedCategory && (
                                 <div className="flex items-center px-4 py-2 bg-gray-100 rounded-lg">
                                     <span>Drawing: </span>
-                                    <div 
+                                    <div
                                         className="ml-2 w-4 h-4 rounded-full"
                                         style={{ backgroundColor: DENT_CATEGORIES[selectedCategory].color }}
                                     />
@@ -658,8 +962,8 @@ const DentDetection = () => {
                             <button
                                 onClick={toggleDrawingMode}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200
-                                    ${isDrawingMode 
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                    ${isDrawingMode
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
                                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                             >
                                 <Edit2 className="w-5 h-5" />
@@ -685,7 +989,12 @@ const DentDetection = () => {
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseUp}
-                        onClick={() => !isDrawingMode && setSelectedDent(null)}
+                        onClick={() => {
+                            if (!isDrawingMode) {
+                                setSelectedDent(null);
+                                setIsEditMode(false);
+                            }
+                        }}
                     >
                         <div
                             className="absolute origin-top-left"
@@ -706,26 +1015,34 @@ const DentDetection = () => {
                                     {filteredDents.map(([id, dent]) => (
                                         <DentOverlay
                                             key={id}
+                                            dentId={id}
                                             dent={dent}
                                             category={DENT_CATEGORIES[dent.category]}
                                             imageSize={imageSize}
                                             isSelected={selectedDent === id}
-                                            onSelect={() => !isDrawingMode && setSelectedDent(id)}
+                                            onSelect={() => {
+                                                if (!isDrawingMode) {
+                                                    setSelectedDent(id);
+                                                    setIsEditMode(false);
+                                                }
+                                            }}
                                             scale={scale}
+                                            scrollToTop={true}
                                         />
                                     ))}
                                 </div>
                             )}
                         </div>
-                        
+
                         {/* Drawing canvas layer */}
                         {isDrawingMode && selectedImage && (
-                            <DrawingCanvas 
+                            <DrawingCanvas
                                 imageRef={imageRef}
                                 scale={scale}
                                 position={position}
                                 onAddDent={handleAddDent}
                                 currentCategory={selectedCategory}
+                                onFinishDrawing={handleFinishDrawing}
                             />
                         )}
 
