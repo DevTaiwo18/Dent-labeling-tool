@@ -1027,7 +1027,7 @@ const DentDetection = () => {
                                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                             >
                                 <Edit2 className="w-5 h-5" />
-                                {isDrawingMode ? 'Exit Drawing' : 'Draw Dents'}
+                                {isDrawingMode ? 'Exit  Annotate' : 'Annotate'}
                             </button>
                             {isDrawingMode && (
                                 <button

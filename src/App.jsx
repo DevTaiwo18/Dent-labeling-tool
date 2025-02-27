@@ -41,7 +41,7 @@ const MobileNav = ({ isOpen, setIsOpen }) => (
       </div>
       <nav className="flex flex-col gap-2 p-4">
         <NavLink to="/" icon={Home}>Home</NavLink>
-        <NavLink to="/display" icon={Home}>Overlay Display</NavLink>
+        <NavLink to="/display" icon={Home}>Dent Detection</NavLink>
       </nav>
     </div>
     <div 
@@ -70,7 +70,7 @@ function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:space-x-4">
             <NavLink to="/" icon={Home}>Home</NavLink>
-            <NavLink to="/display" icon={Home}>Overlay Display</NavLink>
+            <NavLink to="/display" icon={Home}>Dent Detection</NavLink>
           </div>
 
           {/* Mobile menu button */}
