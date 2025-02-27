@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Menu, X, Home, ChevronRight } from 'lucide-react';
 import MainPage from './pages/MainPage';
 import DentDetection from './components/DentDetection';
+import logo from "/src/assets/OBAI_Branding_FullColorLogo.png"
 
 const NavLink = ({ to, children, icon: Icon }) => {
   const location = useLocation();
@@ -61,7 +62,7 @@ function Navigation() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="/src/assets/OBAI_Branding_FullColorLogo.png" 
+              src={logo} 
               alt="OBAI Logo" 
               className="w-20 h-10 object-contain" 
             />
