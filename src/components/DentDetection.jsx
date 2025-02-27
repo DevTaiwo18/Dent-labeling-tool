@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info, Trash2, Edit3 } from 'lucide-react';
 
-const API_ENDPOINT = 'https://racial-ivette-jmccottry-c0386bc9.koyeb.app';
+const API_ENDPOINT = 'https://identity-ai-911315419859.us-east1.run.app/detect/format';
+const API_TOKEN = 'f9f0b1bc-82b1-sexy-8a4a-505359ddd8b5';
 
 const DENT_CATEGORIES = {
     dime: { color: '#ef4444', label: 'Dime' },
@@ -15,7 +16,6 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 4;
 const SCALE_STEP = 0.2;
 
-// Modal component for instructions
 const InstructionModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
@@ -33,9 +33,9 @@ const InstructionModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded-lg flex gap-3">
-                        <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-blue-700">Follow these steps to properly mark dents on your image.</p>
+                    <div className="bg-orange-50 p-4 rounded-lg flex gap-3">
+                        <Info className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-orange-700">Follow these steps to properly mark dents on your image.</p>
                     </div>
 
                     <ol className="space-y-3 pl-5 list-decimal">
@@ -60,7 +60,7 @@ const InstructionModal = ({ isOpen, onClose }) => {
                     <div className="mt-6 flex justify-end">
                         <button
                             onClick={onClose}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
+                            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
                         >
                             Proceed to Drawing
                         </button>
@@ -71,7 +71,6 @@ const InstructionModal = ({ isOpen, onClose }) => {
     );
 };
 
-// Drawing Canvas component for manual dent marking
 const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, onFinishDrawing }) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
@@ -91,7 +90,7 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, 
     const handleMouseDown = (e) => {
         if (!currentCategory) return;
 
-        e.stopPropagation(); // Prevent parent container's drag
+        e.stopPropagation();
         setIsDrawing(true);
         const point = getCanvasCoordinates(e);
         setStartPoint(point);
@@ -119,9 +118,7 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, 
     const handleMouseUp = () => {
         if (!isDrawing || !currentRect || !currentCategory) return;
 
-        // Only add if the rect has some size
         if (currentRect.width > 5 && currentRect.height > 5) {
-            // Convert rectangle to dent format
             const newDent = {
                 center: {
                     x: currentRect.x + currentRect.width / 2,
@@ -134,16 +131,13 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, 
 
             onAddDent(newDent);
 
-            // Auto-save after drawing is complete
             onFinishDrawing();
         }
 
-        // Reset drawing state
         setIsDrawing(false);
         setCurrentRect(null);
     };
 
-    // Clean up if mouse leaves canvas
     const handleMouseLeave = () => {
         if (isDrawing) {
             setIsDrawing(false);
@@ -177,7 +171,6 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, 
     );
 };
 
-// Updated DentOverlay with removed edit and delete buttons
 const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, scale, scrollToTop }) => {
     const EXPANSION_FACTOR = 1.2;
 
@@ -193,14 +186,12 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
     const left = getBoundedPosition(dent.center.x, dent.x_size, imageSize.width);
     const top = getBoundedPosition(dent.center.y, dent.y_size, imageSize.height);
 
-    // Determine if this is a manual dent
     const isManualDent = dentId && dentId.startsWith('manual-');
 
     const handleClick = (e) => {
         e.stopPropagation();
         onSelect?.();
 
-        // Scroll to top when dent is selected to show details
         if (scrollToTop) {
             window.scrollTo({
                 top: 0,
@@ -230,7 +221,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
                 e.currentTarget.style.backgroundColor = `${category.color}22`;
             }}
         >
-            {/* Center point marker */}
             <div
                 className="absolute rounded-full border-2 border-white"
                 style={{
@@ -243,7 +233,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
                 }}
             />
 
-            {/* Always show location info, make it more visible on hover/select */}
             <div
                 className={`absolute -top-6 left-0 px-2 py-1 rounded text-xs whitespace-nowrap transition-opacity duration-200
                     ${isSelected || dent.hover ? 'opacity-100' : 'opacity-75'}`}
@@ -257,7 +246,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
                 {Math.round(dent.center.x)}, {Math.round(dent.center.y)}
             </div>
 
-            {/* Add size info below the box */}
             <div
                 className={`absolute -bottom-6 left-0 px-2 py-1 rounded text-xs whitespace-nowrap transition-opacity duration-200
                     ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-75'}`}
@@ -271,7 +259,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
                 {Math.round(dent.x_size)}x{Math.round(dent.y_size)}px
             </div>
 
-            {/* X and Y axis lines (only show when selected) */}
             {isSelected && (
                 <>
                     {/* X-axis line */}
@@ -305,11 +292,9 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
     );
 };
 
-// New component for displaying dent details
 const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
     if (!dent) return null;
 
-    // Check if this is a manual dent (can be edited or deleted)
     const isManualDent = dentId && dentId.startsWith('manual-');
 
     return (
@@ -327,7 +312,7 @@ const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
                     <div className="flex gap-2">
                         <button
                             onClick={() => onEdit(dentId)}
-                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            className="p-1 text-orange-600 hover:bg-orange-50 rounded"
                         >
                             <Edit3 className="w-4 h-4" />
                         </button>
@@ -434,7 +419,7 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
                             >
                                 <Save className="w-4 h-4" />
                                 Save
@@ -473,14 +458,13 @@ const DentDetection = () => {
 
     const containerRef = useRef(null);
     const imageRef = useRef(null);
+    const fileInputRef = useRef(null);
 
-    // Enhanced image loading with automatic scaling
     const handleImageLoad = (event) => {
         const { naturalWidth, naturalHeight } = event.target;
         setImageSize({ width: naturalWidth, height: naturalHeight });
-        setScale(1); // Always start at 100% zoom
+        setScale(1);
 
-        // Center the image
         if (containerRef.current) {
             const container = containerRef.current;
             const centerX = (container.clientWidth - naturalWidth) / 2;
@@ -506,15 +490,67 @@ const DentDetection = () => {
             setPosition({ x: 0, y: 0 });
             setScale(1);
 
-            const response = await fetch(`${API_ENDPOINT}/get-image-overlay`);
-            if (!response.ok) throw new Error('Failed to get analysis results');
+            const formData = new FormData();
+            formData.append('file', file);
 
-            const data = await response.json();
-            setOverlayData({
-                dent_locations: data.dent_locations,
-                total_dents: data.total_dents,
-                dent_categories: data.dent_categories
-            });
+            try {
+                const response = await fetch('https://identity-ai-911315419859.us-east1.run.app/detect/format', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_TOKEN}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API responded with status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("API Response:", data);
+
+                setOverlayData({
+                    dent_locations: data.dent_locations || {},
+                    total_dents: data.total_dents || 0,
+                    dent_categories: data.dent_categories || {}
+                });
+            } catch (apiError) {
+                console.error("API Error:", apiError);
+
+                console.log("Falling back to sample data for testing");
+                const mockData = {
+                    total_dents: 3,
+                    dent_locations: {
+                        "dent_1": {
+                            "center": { "x": 150, "y": 200 },
+                            "x_size": 45,
+                            "y_size": 30,
+                            "category": "dime"
+                        },
+                        "dent_2": {
+                            "center": { "x": 350, "y": 180 },
+                            "x_size": 60,
+                            "y_size": 35,
+                            "category": "nickel"
+                        },
+                        "dent_3": {
+                            "center": { "x": 250, "y": 300 },
+                            "x_size": 85,
+                            "y_size": 45,
+                            "category": "quarter"
+                        }
+                    },
+                    dent_categories: DENT_CATEGORIES
+                };
+
+                setOverlayData({
+                    dent_locations: mockData.dent_locations || {},
+                    total_dents: mockData.total_dents || 0,
+                    dent_categories: mockData.dent_categories || {}
+                });
+
+                setError('Could not connect to AI service. Using sample data instead.');
+            }
         } catch (error) {
             setError('Failed to process image. Please try again.');
             console.error('Error processing image:', error);
@@ -538,7 +574,6 @@ const DentDetection = () => {
     const handleEditDent = (dentId) => {
         if (!dentId || !dentId.startsWith('manual-')) return;
 
-        // Set selected dent and toggle edit mode
         setSelectedDent(dentId);
         setIsEditMode(true);
     };
@@ -550,12 +585,10 @@ const DentDetection = () => {
         setManualDents(prev => {
             const dent = { ...prev[dentId] };
 
-            // Handle nested properties like center.x
             if (property.includes('.')) {
                 const [parent, child] = property.split('.');
                 dent[parent] = { ...dent[parent], [child]: parseFloat(value) };
             } else {
-                // Handle direct properties
                 dent[property] = property === 'category' ? value : parseFloat(value);
             }
 
@@ -579,29 +612,74 @@ const DentDetection = () => {
         }
     };
 
-    // Enhanced zoom behavior with smooth animation
-    const handleWheel = useCallback((e) => {
-        e.preventDefault();
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
 
-        const delta = e.deltaY * -0.01;
-        const newScale = Math.min(Math.max(MIN_SCALE, scale + delta), MAX_SCALE);
+    const saveAnnotation = (filename = 'dent-analysis') => {
+        try {
+            const allDents = {
+                ...(overlayData?.dent_locations || {}),
+                ...manualDents
+            };
 
-        const scaleChange = newScale - scale;
-        const newPosition = {
-            x: position.x - ((x - position.x) * scaleChange) / scale,
-            y: position.y - ((y - position.y) * scaleChange) / scale
-        };
+            const json = JSON.stringify({
+                total_dents: Object.keys(allDents).length,
+                dent_locations: allDents,
+                dent_categories: Object.fromEntries(
+                    Object.entries(DENT_CATEGORIES).map(([key, { label }]) => [key, label])
+                )
+            }, null, 2);
 
-        setScale(newScale);
-        setPosition(newPosition);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}.json`;
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error saving annotation:', error);
+            setError('Failed to save annotation. Please try again.');
+        }
+    };
+
+    useEffect(() => {
+        const currentContainer = containerRef.current;
+
+        if (currentContainer) {
+            const wheelHandler = (e) => {
+                e.preventDefault();
+                const rect = currentContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const delta = e.deltaY * -0.01;
+                const newScale = Math.min(Math.max(MIN_SCALE, scale + delta), MAX_SCALE);
+
+                const scaleChange = newScale - scale;
+                const newPosition = {
+                    x: position.x - ((x - position.x) * scaleChange) / scale,
+                    y: position.y - ((y - position.y) * scaleChange) / scale
+                };
+
+                setScale(newScale);
+                setPosition(newPosition);
+            };
+
+            currentContainer.addEventListener('wheel', wheelHandler, { passive: false });
+
+            return () => {
+                currentContainer.removeEventListener('wheel', wheelHandler);
+            };
+        }
     }, [scale, position]);
 
-    // Enhanced mouse controls
+
     const handleMouseDown = useCallback((e) => {
-        if (e.button !== 0 || isDrawingMode) return; // Only left mouse button and not in drawing mode
+        if (e.button !== 0 || isDrawingMode) return;
         e.preventDefault();
         setIsDragging(true);
         setDragStart({
@@ -635,31 +713,25 @@ const DentDetection = () => {
 
     const toggleDrawingMode = () => {
         if (!isDrawingMode) {
-            // When entering drawing mode, show the instructions
             setShowInstructionModal(true);
         }
         setIsDrawingMode(!isDrawingMode);
-        setIsEditMode(false); // Exit edit mode when toggling drawing mode
+        setIsEditMode(false);
         if (!isDrawingMode && !selectedCategory) {
-            // Set a default category when entering drawing mode
             setSelectedCategory(Object.keys(DENT_CATEGORIES)[0]);
         }
     };
 
-    // Function to handle finishing drawing (auto-save)
     const handleFinishDrawing = async () => {
         try {
-            // Save the current annotations
             await saveAnnotationToAPI();
         } catch (error) {
             console.error("Error auto-saving annotation:", error);
         }
     };
 
-    // New function to save annotation to API endpoint
     const saveAnnotationToAPI = async () => {
         try {
-            // Format manual dents for the API
             const dentData = Object.values(manualDents).map(dent => ({
                 center: { x: dent.center.x, y: dent.center.y },
                 x_size: dent.x_size,
@@ -667,33 +739,22 @@ const DentDetection = () => {
                 category: dent.category
             }));
 
-            // Send to API endpoint
-            const response = await fetch(`${API_ENDPOINT}/save-annotation`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dentData)
-            });
+            console.log(`Saving ${dentData.length} dents locally only`);
 
-            if (!response.ok) {
-                throw new Error('Failed to save annotation to API');
-            }
-
-            // If drawing is done, exit drawing mode
             if (isDrawingMode) {
                 setIsDrawingMode(false);
             }
 
             return true;
         } catch (error) {
-            console.error('Error saving annotation to API:', error);
+            console.error('Error saving annotation:', error);
             setError('Failed to save annotation. Please try again.');
             return false;
         }
     };
 
-    // Combine API and manual dents
+
+
     const combinedDents = {
         ...(overlayData?.dent_locations || {}),
         ...manualDents
@@ -706,7 +767,6 @@ const DentDetection = () => {
 
     const totalDents = Object.values(dentCounts).reduce((sum, count) => sum + count, 0);
 
-    // Filter dents based on selected category
     const filteredDents = Object.entries(combinedDents)
         .filter(([_, dent]) => !filterCategory || dent.category === filterCategory);
 
@@ -732,7 +792,7 @@ const DentDetection = () => {
             <div className="w-72 bg-white border-r border-gray-200 p-6 shadow-lg">
                 <div className="mb-8">
                     <h2 className="text-2xl font-semibold mb-2">Results Summary</h2>
-                    <p className="text-3xl font-bold text-blue-600">{totalDents} Dents</p>
+                    <p className="text-3xl font-bold text-orange-600">{totalDents} Dents</p>
                 </div>
 
                 {selectedDent && combinedDents[selectedDent] && (
@@ -834,7 +894,7 @@ const DentDetection = () => {
                                         </button>
                                         <button
                                             onClick={() => setIsEditMode(false)}
-                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg flex items-center gap-1 transition-colors duration-200"
+                                            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg flex items-center gap-1 transition-colors duration-200"
                                         >
                                             <Save className="w-4 h-4" />
                                             Done
@@ -859,7 +919,7 @@ const DentDetection = () => {
 
                     {filterCategory !== null && (
                         <button
-                            className="flex items-center justify-center w-full p-2 mb-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition-all duration-200 border border-blue-200"
+                            className="flex items-center justify-center w-full p-2 mb-3 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 transition-all duration-200 border border-orange-200"
                             onClick={() => setFilterCategory(null)}
                         >
                             <X className="w-4 h-4 mr-2" />
@@ -873,7 +933,7 @@ const DentDetection = () => {
                                 key={key}
                                 className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200
                     ${filterCategory === key ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
-                    ${isDrawingMode && selectedCategory === key ? 'ring-2 ring-blue-500' : ''}`}
+                    ${isDrawingMode && selectedCategory === key ? 'ring-2 ring-orange-500' : ''}`}
                                 onClick={() => {
                                     if (isDrawingMode) {
                                         setSelectedCategory(key);
@@ -898,8 +958,8 @@ const DentDetection = () => {
                 {selectedImage && (
                     <div className="mt-8 space-y-3">
                         <button
-                            onClick={() => saveAnnotation()}
-                            className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-blue-200"
+                            onClick={() => setShowSaveModal(true)}
+                            className="w-full flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-orange-200"
                         >
                             <Download className="w-5 h-5" />
                             Export Analysis
@@ -914,14 +974,14 @@ const DentDetection = () => {
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => document.getElementById('fileInput').click()}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-colors duration-200 shadow-md"
+                                onClick={() => fileInputRef.current.click()}
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-colors duration-200 shadow-md"
                                 disabled={isLoading}
                             >
                                 <Upload className="w-5 h-5" />
                                 {isLoading ? 'Processing...' : 'Upload Image'}
                                 <input
-                                    id="fileInput"
+                                    ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageUpload}
@@ -963,7 +1023,7 @@ const DentDetection = () => {
                                 onClick={toggleDrawingMode}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200
                                     ${isDrawingMode
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                        ? 'bg-orange-600 text-white hover:bg-orange-700'
                                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                             >
                                 <Edit2 className="w-5 h-5" />
@@ -984,7 +1044,6 @@ const DentDetection = () => {
                     <div
                         ref={containerRef}
                         className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden ${isDrawingMode ? 'cursor-crosshair' : 'cursor-grab'}`}
-                        onWheel={handleWheel}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
@@ -996,6 +1055,7 @@ const DentDetection = () => {
                             }
                         }}
                     >
+
                         <div
                             className="absolute origin-top-left"
                             style={{
@@ -1056,7 +1116,7 @@ const DentDetection = () => {
                             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                                 <div className="bg-white rounded-lg p-6 shadow-xl">
                                     <div className="flex items-center gap-3">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
                                         <div className="text-xl">Processing image...</div>
                                     </div>
                                 </div>

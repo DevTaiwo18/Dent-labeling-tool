@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Wrench, Home, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, ChevronRight } from 'lucide-react';
 import MainPage from './pages/MainPage';
-import DentAnalysisTool from './components/DentAnalysisTool';
 import DentDetection from './components/DentDetection';
+
 const NavLink = ({ to, children, icon: Icon }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -13,8 +13,8 @@ const NavLink = ({ to, children, icon: Icon }) => {
       to={to}
       className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ease-in-out space-x-2
         ${isActive 
-          ? 'text-blue-600 bg-blue-50' 
-          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+          ? 'text-orange-600 bg-orange-50' 
+          : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50'
         }`}
     >
       <Icon className="w-5 h-5" />
@@ -41,8 +41,7 @@ const MobileNav = ({ isOpen, setIsOpen }) => (
       </div>
       <nav className="flex flex-col gap-2 p-4">
         <NavLink to="/" icon={Home}>Home</NavLink>
-        <NavLink to="/label" icon={Wrench}>Labeling Tool</NavLink>
-        <NavLink to="/display" icon={Wrench}>Overlay Display</NavLink>
+        <NavLink to="/display" icon={Home}>Overlay Display</NavLink>
       </nav>
     </div>
     <div 
@@ -58,22 +57,20 @@ function Navigation() {
   return (
     <nav className="sticky top-0 z-30 bg-white border-b border-gray-200 backdrop-blur-sm bg-opacity-90">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo and Desktop Navigation */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <Wrench className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-semibold text-gray-900">
-                Dent Detection
-              </span>
-            </Link>
-            <div className="hidden md:flex md:ml-10 md:space-x-4">
-              <NavLink to="/" icon={Home}>Home</NavLink>
-              <NavLink to="/label" icon={Wrench}>Labeling Tool</NavLink>
-              <NavLink to="/display" icon={Wrench}>Overlay Display</NavLink>
-            </div>
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/src/assets/OBAI_Branding_FullColorLogo.png" 
+              alt="OBAI Logo" 
+              className="w-20 h-10 object-contain" 
+            />
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:space-x-4">
+            <NavLink to="/" icon={Home}>Home</NavLink>
+            <NavLink to="/display" icon={Home}>Overlay Display</NavLink>
           </div>
 
           {/* Mobile menu button */}
@@ -103,7 +100,6 @@ function App() {
         <main className="relative">
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/label" element={<DentAnalysisTool />} />
             <Route path="/display" element={<DentDetection />} />
           </Routes>
         </main>
