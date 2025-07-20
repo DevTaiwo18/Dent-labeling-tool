@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info, Trash2, Edit3 } from 'lucide-react';
 
-const API_ENDPOINT = 'https://identity-ai-911315419859.us-east1.run.app/detect/format';
+const API_ENDPOINT = 'https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format';
 const API_TOKEN = 'f9f0b1bc-82b1-sexy-8a4a-505359ddd8b5';
 
 const DENT_CATEGORIES = {
@@ -494,7 +494,7 @@ const DentDetection = () => {
             formData.append('file', file);
 
             try {
-                const response = await fetch('https://identity-ai-911315419859.us-east1.run.app/detect/format', {
+                const response = await fetch('https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${API_TOKEN}`
