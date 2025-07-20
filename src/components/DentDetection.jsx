@@ -494,13 +494,14 @@ const DentDetection = () => {
             formData.append('file', file);
 
             try {
-                const response = await fetch('https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format', {
+                const response = await fetch('https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format?threshold=0.1', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${API_TOKEN}`
                     },
                     body: formData
                 });
+
 
                 if (!response.ok) {
                     throw new Error(`API responded with status: ${response.status}`);
