@@ -66,7 +66,7 @@ export default function MainPage() {
             AI-Powered Dent Detection
           </h1>
           <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Leverage OBAI's advanced artificial intelligence to identify and analyze dents across various categories including Dime, Nickel, Quarter, Half Dollar, and Oversize.
+            Leverage OBAI's advanced artificial intelligence to identify and analyze dents with precision across four key categories: Nickel, Quarter, Half Dollar, and Oversize classifications.
           </p>
 
           {/* CTA Buttons */}
@@ -123,16 +123,7 @@ export default function MainPage() {
             Supported Categories
           </h2>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="bg-white rounded-lg shadow p-6 flex items-center space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-red-500"></div>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium">Dime</h3>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bg-white rounded-lg shadow p-6 flex items-center space-x-4">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-purple-500"></div>

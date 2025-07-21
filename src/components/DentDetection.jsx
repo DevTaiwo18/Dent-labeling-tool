@@ -5,7 +5,6 @@ const API_ENDPOINT = 'https://dent-detection-app.wittyglacier-9b6d796b.eastus.az
 const API_TOKEN = 'f9f0b1bc-82b1-sexy-8a4a-505359ddd8b5';
 
 const DENT_CATEGORIES = {
-    dime: { color: '#ef4444', label: 'Dime' },
     nickel: { color: '#a855f7', label: 'Nickel' },
     quarter: { color: '#3b82f6', label: 'Quarter' },
     half_dollar: { color: '#22c55e', label: 'Half Dollar' },
@@ -494,7 +493,7 @@ const DentDetection = () => {
             formData.append('file', file);
 
             try {
-                const response = await fetch('https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format?threshold=0.1', {
+                const response = await fetch('https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format?threshold=0.05', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${API_TOKEN}`
@@ -526,19 +525,19 @@ const DentDetection = () => {
                             "center": { "x": 150, "y": 200 },
                             "x_size": 45,
                             "y_size": 30,
-                            "category": "dime"
+                            "category": "nickel"
                         },
                         "dent_2": {
                             "center": { "x": 350, "y": 180 },
                             "x_size": 60,
                             "y_size": 35,
-                            "category": "nickel"
+                            "category": "quarter"
                         },
                         "dent_3": {
                             "center": { "x": 250, "y": 300 },
                             "x_size": 85,
                             "y_size": 45,
-                            "category": "quarter"
+                            "category": "half_dollar"
                         }
                     },
                     dent_categories: DENT_CATEGORIES
