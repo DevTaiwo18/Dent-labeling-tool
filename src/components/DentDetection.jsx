@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info, Trash2, Edit3 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Move, Upload, X, Filter, Download, Edit2, Save, Circle, Square, Info, Trash2, Edit3, Calendar, ArrowRight } from 'lucide-react';
 
 const API_ENDPOINT = 'https://dent-detection-app.wittyglacier-9b6d796b.eastus.azurecontainerapps.io/detect/format';
 const API_TOKEN = 'f9f0b1bc-82b1-sexy-8a4a-505359ddd8b5';
@@ -15,54 +15,97 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 4;
 const SCALE_STEP = 0.2;
 
-const InstructionModal = ({ isOpen, onClose }) => {
+const InstructionModal = ({ isOpen, onClose, onDontShowAgain, onStartAnnotating }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Drawing Instructions</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">How to Annotate Dents</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="space-y-4">
-                    <div className="bg-orange-50 p-4 rounded-lg flex gap-3">
-                        <Info className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-orange-700">Follow these steps to properly mark dents on your image.</p>
+                <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-4 rounded-lg border border-orange-200">
+                        <div className="flex gap-3">
+                            <Info className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="font-semibold text-orange-800 mb-1">Quick Start Guide</h3>
+                                <p className="text-orange-700 text-sm">Follow these simple steps to mark dents on your image professionally.</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <ol className="space-y-3 pl-5 list-decimal">
-                        <li className="pl-2">
-                            <span className="font-medium">Select a dent category</span>
-                            <p className="text-gray-600 text-sm mt-1">Click on a category from the left panel to select the dent type you want to mark.</p>
-                        </li>
-                        <li className="pl-2">
-                            <span className="font-medium">Click and drag on the image</span>
-                            <p className="text-gray-600 text-sm mt-1">Click where you want to start the dent marking and drag to define its size.</p>
-                        </li>
-                        <li className="pl-2">
-                            <span className="font-medium">Release to create the dent</span>
-                            <p className="text-gray-600 text-sm mt-1">When you release the mouse button, the dent will be created and added to your analysis.</p>
-                        </li>
-                        <li className="pl-2">
-                            <span className="font-medium">Automatic saving</span>
-                            <p className="text-gray-600 text-sm mt-1">Your drawing will be automatically saved when you finish drawing each dent.</p>
-                        </li>
-                    </ol>
+                    <div className="space-y-4">
+                        <div className="flex gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+                            <div>
+                                <h4 className="font-semibold text-blue-800 mb-1">Select Dent Category</h4>
+                                <p className="text-blue-700 text-sm">Choose the appropriate dent size from the left panel (Nickel, Quarter, Half Dollar, or Oversize).</p>
+                            </div>
+                        </div>
 
-                    <div className="mt-6 flex justify-end">
-                        <button
-                            onClick={onClose}
-                            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
-                        >
-                            Proceed to Drawing
-                        </button>
+                        <div className="flex gap-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+                            <div>
+                                <h4 className="font-semibold text-green-800 mb-1">Draw Dent Areas</h4>
+                                <p className="text-green-700 text-sm">Click and drag on the image to outline each dent. You can draw as many dents as needed without exiting annotation mode.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+                            <div>
+                                <h4 className="font-semibold text-purple-800 mb-1">Continue or Finish</h4>
+                                <p className="text-purple-700 text-sm">Keep drawing more dents or click "Exit Annotate" when you're finished. All annotations are saved automatically.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h4 className="font-semibold text-gray-800 mb-2">💡 Pro Tips</h4>
+                        <ul className="text-sm text-gray-700 space-y-1">
+                            <li>• Switch between dent categories while annotating</li>
+                            <li>• Use zoom controls for precise marking</li>
+                            <li>• Edit or delete any dent annotations (AI or manual)</li>
+                            <li>• Export your analysis when complete</li>
+                        </ul>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-gray-200">
+                        <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        onDontShowAgain();
+                                    }
+                                }}
+                                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                            />
+                            Don't show this again
+                        </label>
+                        
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onClose}
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={onStartAnnotating}
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 font-medium"
+                            >
+                                Start Annotating
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,7 +172,6 @@ const DrawingCanvas = ({ imageRef, scale, position, onAddDent, currentCategory, 
             };
 
             onAddDent(newDent);
-
             onFinishDrawing();
         }
 
@@ -184,8 +226,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
     const expandedYSize = dent.y_size * EXPANSION_FACTOR;
     const left = getBoundedPosition(dent.center.x, dent.x_size, imageSize.width);
     const top = getBoundedPosition(dent.center.y, dent.y_size, imageSize.height);
-
-    const isManualDent = dentId && dentId.startsWith('manual-');
 
     const handleClick = (e) => {
         e.stopPropagation();
@@ -260,7 +300,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
 
             {isSelected && (
                 <>
-                    {/* X-axis line */}
                     <div
                         className="absolute bg-white opacity-70"
                         style={{
@@ -273,7 +312,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
                         }}
                     />
 
-                    {/* Y-axis line */}
                     <div
                         className="absolute bg-white opacity-70"
                         style={{
@@ -294,8 +332,6 @@ const DentOverlay = ({ dentId, dent, category, imageSize, isSelected, onSelect, 
 const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
     if (!dent) return null;
 
-    const isManualDent = dentId && dentId.startsWith('manual-');
-
     return (
         <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
             <div className="flex items-center justify-between">
@@ -307,22 +343,22 @@ const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
                     <span className="font-semibold">{DENT_CATEGORIES[category].label} Dent</span>
                 </div>
 
-                {isManualDent && (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => onEdit(dentId)}
-                            className="p-1 text-orange-600 hover:bg-orange-50 rounded"
-                        >
-                            <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => onDelete(dentId)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => onEdit(dentId)}
+                        className="p-1 text-orange-600 hover:bg-orange-50 rounded"
+                        title="Edit dent"
+                    >
+                        <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => onDelete(dentId)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        title="Delete dent"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             <div className="space-y-4">
@@ -367,61 +403,146 @@ const DentDetails = ({ dent, category, dentId, onEdit, onDelete }) => {
     );
 };
 
-// Save annotation dialog
 const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
     if (!isOpen) return null;
 
     const [filename, setFilename] = useState('dent-analysis');
+    const [exportOptions, setExportOptions] = useState({
+        json: true,
+        annotatedImage: true,
+        originalImage: false
+    });
 
     const handleSave = () => {
-        onSave(filename);
+        onSave(filename, exportOptions);
         onClose();
     };
 
+    const toggleOption = (option) => {
+        setExportOptions(prev => ({
+            ...prev,
+            [option]: !prev[option]
+        }));
+    };
+
+    const isValidSelection = exportOptions.json || exportOptions.annotatedImage || exportOptions.originalImage;
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">Save Annotation</h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-800">Export Analysis</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                             Filename
                         </label>
                         <input
                             type="text"
                             value={filename}
                             onChange={(e) => setFilename(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Enter filename without extension"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            placeholder="Enter filename"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                            File will be saved with .json extension
-                        </p>
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                        <div className="flex space-x-2">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Export Options
+                        </label>
+                        
+                        <div className="space-y-3">
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                exportOptions.json 
+                                    ? 'border-orange-500 bg-orange-50' 
+                                    : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => toggleOption('json')}>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.json}
+                                        onChange={() => toggleOption('json')}
+                                        className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                                    />
+                                    <div>
+                                        <div className="font-semibold text-gray-800">Analysis Data (JSON)</div>
+                                        <div className="text-sm text-gray-600">Dent locations, categories, and measurements</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                exportOptions.annotatedImage 
+                                    ? 'border-orange-500 bg-orange-50' 
+                                    : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => toggleOption('annotatedImage')}>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.annotatedImage}
+                                        onChange={() => toggleOption('annotatedImage')}
+                                        className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                                    />
+                                    <div>
+                                        <div className="font-semibold text-gray-800">Annotated Image (PNG)</div>
+                                        <div className="text-sm text-gray-600">Image with visible dent markings and branding</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                exportOptions.originalImage 
+                                    ? 'border-orange-500 bg-orange-50' 
+                                    : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => toggleOption('originalImage')}>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={exportOptions.originalImage}
+                                        onChange={() => toggleOption('originalImage')}
+                                        className="w-5 h-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                                    />
+                                    <div>
+                                        <div className="font-semibold text-gray-800">Original Image (Copy)</div>
+                                        <div className="text-sm text-gray-600">Clean copy of the uploaded image</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {!isValidSelection && (
+                            <p className="text-sm text-red-600 mt-3 font-medium">
+                                Please select at least one export option
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end pt-6 border-t border-gray-200">
+                        <div className="flex space-x-3">
                             <button
                                 onClick={onClose}
-                                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors duration-200"
+                                className="px-5 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
+                                disabled={!isValidSelection}
+                                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 transition-colors duration-200 font-medium shadow-lg"
                             >
-                                <Save className="w-4 h-4" />
-                                Save
+                                <Download className="w-4 h-4" />
+                                Export Files
                             </button>
                         </div>
                     </div>
@@ -437,23 +558,24 @@ const DentDetection = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [selectedImage, setSelectedImage] = useState(null);
-    const [overlayData, setOverlayData] = useState(null);
+    const [aiDents, setAiDents] = useState({}); // AI detected dents
+    const [manualDents, setManualDents] = useState({}); // Manually added dents
+    const [modifiedAiDents, setModifiedAiDents] = useState({}); // Modified AI dents
+    const [deletedDents, setDeletedDents] = useState(new Set()); // Deleted dent IDs
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [selectedDent, setSelectedDent] = useState(null);
     const [filterCategory, setFilterCategory] = useState(null);
 
-    // Drawing mode states
     const [isDrawingMode, setIsDrawingMode] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [manualDents, setManualDents] = useState({});
     const [nextDentId, setNextDentId] = useState(1);
 
-    // Modal states
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
+    const [hideInstructions, setHideInstructions] = useState(false);
 
     const containerRef = useRef(null);
     const imageRef = useRef(null);
@@ -462,12 +584,23 @@ const DentDetection = () => {
     const handleImageLoad = (event) => {
         const { naturalWidth, naturalHeight } = event.target;
         setImageSize({ width: naturalWidth, height: naturalHeight });
-        setScale(1);
-
+        
         if (containerRef.current) {
             const container = containerRef.current;
-            const centerX = (container.clientWidth - naturalWidth) / 2;
-            const centerY = (container.clientHeight - naturalHeight) / 2;
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            const scaleX = containerWidth / naturalWidth;
+            const scaleY = containerHeight / naturalHeight;
+            const initialScale = Math.min(scaleX, scaleY, 1);
+            
+            setScale(initialScale);
+            
+            const scaledWidth = naturalWidth * initialScale;
+            const scaledHeight = naturalHeight * initialScale;
+            const centerX = (containerWidth - scaledWidth) / 2;
+            const centerY = (containerHeight - scaledHeight) / 2;
+            
             setPosition({ x: centerX, y: centerY });
         }
     };
@@ -481,7 +614,10 @@ const DentDetection = () => {
             setError(null);
             setSelectedDent(null);
             setFilterCategory(null);
+            setAiDents({});
             setManualDents({});
+            setModifiedAiDents({});
+            setDeletedDents(new Set());
             setNextDentId(1);
 
             const imageUrl = URL.createObjectURL(file);
@@ -501,7 +637,6 @@ const DentDetection = () => {
                     body: formData
                 });
 
-
                 if (!response.ok) {
                     throw new Error(`API responded with status: ${response.status}`);
                 }
@@ -509,46 +644,33 @@ const DentDetection = () => {
                 const data = await response.json();
                 console.log("API Response:", data);
 
-                setOverlayData({
-                    dent_locations: data.dent_locations || {},
-                    total_dents: data.total_dents || 0,
-                    dent_categories: data.dent_categories || {}
-                });
+                setAiDents(data.dent_locations || {});
             } catch (apiError) {
                 console.error("API Error:", apiError);
 
                 console.log("Falling back to sample data for testing");
                 const mockData = {
-                    total_dents: 3,
-                    dent_locations: {
-                        "dent_1": {
-                            "center": { "x": 150, "y": 200 },
-                            "x_size": 45,
-                            "y_size": 30,
-                            "category": "nickel"
-                        },
-                        "dent_2": {
-                            "center": { "x": 350, "y": 180 },
-                            "x_size": 60,
-                            "y_size": 35,
-                            "category": "quarter"
-                        },
-                        "dent_3": {
-                            "center": { "x": 250, "y": 300 },
-                            "x_size": 85,
-                            "y_size": 45,
-                            "category": "half_dollar"
-                        }
+                    "dent_1": {
+                        "center": { "x": 150, "y": 200 },
+                        "x_size": 45,
+                        "y_size": 30,
+                        "category": "nickel"
                     },
-                    dent_categories: DENT_CATEGORIES
+                    "dent_2": {
+                        "center": { "x": 350, "y": 180 },
+                        "x_size": 60,
+                        "y_size": 35,
+                        "category": "quarter"
+                    },
+                    "dent_3": {
+                        "center": { "x": 250, "y": 300 },
+                        "x_size": 85,
+                        "y_size": 45,
+                        "category": "half_dollar"
+                    }
                 };
 
-                setOverlayData({
-                    dent_locations: mockData.dent_locations || {},
-                    total_dents: mockData.total_dents || 0,
-                    dent_categories: mockData.dent_categories || {}
-                });
-
+                setAiDents(mockData);
                 setError('Could not connect to AI service. Using sample data instead.');
             }
         } catch (error) {
@@ -559,7 +681,6 @@ const DentDetection = () => {
         }
     };
 
-    // Add a manual dent
     const handleAddDent = (dent) => {
         const id = `manual-${nextDentId}`;
         setManualDents(prev => ({
@@ -570,41 +691,55 @@ const DentDetection = () => {
         setSelectedDent(id);
     };
 
-    // Edit a dent
     const handleEditDent = (dentId) => {
-        if (!dentId || !dentId.startsWith('manual-')) return;
-
         setSelectedDent(dentId);
         setIsEditMode(true);
     };
 
-    // Function to update dent properties
     const updateDent = (dentId, property, value) => {
-        if (!dentId.startsWith('manual-')) return;
-
-        setManualDents(prev => {
-            const dent = { ...prev[dentId] };
-
+        const updateDentData = (dent, property, value) => {
+            const updatedDent = { ...dent };
+            
             if (property.includes('.')) {
                 const [parent, child] = property.split('.');
-                dent[parent] = { ...dent[parent], [child]: parseFloat(value) };
+                updatedDent[parent] = { ...updatedDent[parent], [child]: parseFloat(value) };
             } else {
-                dent[property] = property === 'category' ? value : parseFloat(value);
+                updatedDent[property] = property === 'category' ? value : parseFloat(value);
             }
+            
+            return updatedDent;
+        };
 
-            return { ...prev, [dentId]: dent };
-        });
+        if (dentId.startsWith('manual-')) {
+            // Update manual dent
+            setManualDents(prev => ({
+                ...prev,
+                [dentId]: updateDentData(prev[dentId], property, value)
+            }));
+        } else {
+            // Update AI dent - move to modified collection
+            const originalDent = aiDents[dentId] || modifiedAiDents[dentId];
+            if (originalDent) {
+                setModifiedAiDents(prev => ({
+                    ...prev,
+                    [dentId]: updateDentData(originalDent, property, value)
+                }));
+            }
+        }
     };
 
-    // Delete a dent
     const handleDeleteDent = (dentId) => {
-        if (!dentId.startsWith('manual-')) return;
-
-        setManualDents(prev => {
-            const newDents = { ...prev };
-            delete newDents[dentId];
-            return newDents;
-        });
+        if (dentId.startsWith('manual-')) {
+            // Delete manual dent
+            setManualDents(prev => {
+                const newDents = { ...prev };
+                delete newDents[dentId];
+                return newDents;
+            });
+        } else {
+            // Mark AI dent as deleted
+            setDeletedDents(prev => new Set([...prev, dentId]));
+        }
 
         if (selectedDent === dentId) {
             setSelectedDent(null);
@@ -612,39 +747,302 @@ const DentDetection = () => {
         }
     };
 
+    const createAnnotatedImage = async () => {
+        return new Promise((resolve) => {
+            if (!selectedImage || !imageRef.current) {
+                resolve(null);
+                return;
+            }
 
-    const saveAnnotation = (filename = 'dent-analysis') => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = imageRef.current;
+
+            // Add padding for branding and title
+            const padding = 100;
+            const headerHeight = 80;
+            const footerHeight = 60;
+            
+            canvas.width = img.naturalWidth + (padding * 2);
+            canvas.height = img.naturalHeight + headerHeight + footerHeight + (padding * 2);
+
+            // Fill background with white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add header with title and branding
+            const headerY = padding;
+            
+            // Title
+            ctx.fillStyle = '#1f2937';
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            const title = 'Dent Analysis Report';
+            ctx.fillText(title, padding, headerY + 30);
+            
+            // Subtitle with date
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '18px Arial, sans-serif';
+            const date = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            ctx.fillText(`Generated on ${date}`, padding, headerY + 60);
+
+            // Company branding (top right)
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('Obai', canvas.width - padding, headerY + 30);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '14px Arial, sans-serif';
+            ctx.fillText('Professional Dent Analysis Solution', canvas.width - padding, headerY + 50);
+
+            // Draw separator line
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, headerY + 75);
+            ctx.lineTo(canvas.width - padding, headerY + 75);
+            ctx.stroke();
+
+            // Draw the original image
+            const imageY = headerY + headerHeight;
+            ctx.drawImage(img, padding, imageY);
+
+            // Draw dent overlays on the image
+            Object.entries(getAllActiveDents()).forEach(([id, dent]) => {
+                const category = DENT_CATEGORIES[dent.category];
+                if (!category) return;
+
+                const EXPANSION_FACTOR = 1.2;
+                const expandedXSize = dent.x_size * EXPANSION_FACTOR;
+                const expandedYSize = dent.y_size * EXPANSION_FACTOR;
+                
+                const left = padding + Math.max(0, Math.min(
+                    dent.center.x - (expandedXSize / 2),
+                    img.naturalWidth - expandedXSize
+                ));
+                const top = imageY + Math.max(0, Math.min(
+                    dent.center.y - (expandedYSize / 2),
+                    img.naturalHeight - expandedYSize
+                ));
+
+                // Draw dent rectangle
+                ctx.strokeStyle = category.color;
+                ctx.lineWidth = 4;
+                ctx.setLineDash([]);
+                ctx.strokeRect(left, top, expandedXSize, expandedYSize);
+
+                // Fill with semi-transparent color
+                ctx.fillStyle = `${category.color}40`;
+                ctx.fillRect(left, top, expandedXSize, expandedYSize);
+
+                // Draw center point
+                ctx.beginPath();
+                ctx.arc(padding + dent.center.x, imageY + dent.center.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = category.color;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw label with better styling
+                const labelText = `${category.label}`;
+                ctx.font = 'bold 16px Arial, sans-serif';
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = category.color;
+                ctx.lineWidth = 4;
+                ctx.textAlign = 'left';
+                
+                const textMetrics = ctx.measureText(labelText);
+                const labelX = Math.max(padding + 5, Math.min(left, canvas.width - textMetrics.width - 15));
+                const labelY = Math.max(imageY + 25, top - 8);
+                
+                // Label background
+                ctx.fillStyle = category.color;
+                ctx.fillRect(labelX - 5, labelY - 18, textMetrics.width + 10, 22);
+                
+                ctx.fillStyle = 'white';
+                ctx.fillText(labelText, labelX, labelY);
+
+                // Draw coordinates and dimensions
+                const coordText = `(${Math.round(dent.center.x)}, ${Math.round(dent.center.y)})`;
+                const dimText = `${Math.round(dent.x_size)}×${Math.round(dent.y_size)}px`;
+                
+                ctx.font = '12px Arial, sans-serif';
+                ctx.fillStyle = '#374151';
+                
+                const coordY = Math.min(canvas.height - footerHeight - 25, top + expandedYSize + 15);
+                ctx.fillText(coordText, labelX, coordY);
+                ctx.fillText(dimText, labelX, coordY + 15);
+            });
+
+            // Footer with summary and branding
+            const footerY = canvas.height - footerHeight;
+            
+            // Summary statistics
+            ctx.fillStyle = '#374151';
+            ctx.font = 'bold 18px Arial, sans-serif';
+            ctx.textAlign = 'left';
+            const totalDents = Object.keys(getAllActiveDents()).length;
+            ctx.fillText(`Total Dents Found: ${totalDents}`, padding, footerY + 25);
+            
+            // Category breakdown
+            const dentCounts = Object.values(getAllActiveDents()).reduce((acc, dent) => {
+                acc[dent.category] = (acc[dent.category] || 0) + 1;
+                return acc;
+            }, {});
+            
+            ctx.font = '14px Arial, sans-serif';
+            ctx.fillStyle = '#6b7280';
+            let breakdownText = 'Categories: ';
+            Object.entries(dentCounts).forEach(([category, count], index) => {
+                if (index > 0) breakdownText += ', ';
+                breakdownText += `${DENT_CATEGORIES[category]?.label || category}: ${count}`;
+            });
+            ctx.fillText(breakdownText, padding, footerY + 45);
+
+            // Footer branding
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '12px Arial, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('© 2024 Obai - Professional Vehicle Analysis', canvas.width - padding, footerY + 45);
+
+            canvas.toBlob(resolve, 'image/png', 0.95);
+        });
+    };
+
+    const saveAnnotation = async (filename = 'dent-analysis', options = { json: true }) => {
         try {
-            const allDents = {
-                ...(overlayData?.dent_locations || {}),
-                ...manualDents
-            };
+            const filesToDownload = [];
+            
+            // Prepare JSON data
+            if (options.json) {
+                const allDents = getAllActiveDents();
 
-            const json = JSON.stringify({
-                total_dents: Object.keys(allDents).length,
-                dent_locations: allDents,
-                dent_categories: Object.fromEntries(
-                    Object.entries(DENT_CATEGORIES).map(([key, { label }]) => [key, label])
-                )
-            }, null, 2);
+                const jsonData = {
+                    total_dents: Object.keys(allDents).length,
+                    dent_locations: allDents,
+                    dent_categories: Object.fromEntries(
+                        Object.entries(DENT_CATEGORIES).map(([key, { label }]) => [key, label])
+                    ),
+                    export_timestamp: new Date().toISOString(),
+                    image_dimensions: imageSize
+                };
 
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+                const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+                filesToDownload.push({ blob: jsonBlob, filename: `${filename}.json` });
+            }
 
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${filename}.json`;
-            document.body.appendChild(a);
-            a.click();
+            // Create annotated image
+            if (options.annotatedImage) {
+                const annotatedBlob = await createAnnotatedImage();
+                if (annotatedBlob) {
+                    filesToDownload.push({ blob: annotatedBlob, filename: `${filename}_annotated.png` });
+                }
+            }
 
-            // Clean up
-            URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            // Add original image
+            if (options.originalImage && selectedImage) {
+                try {
+                    const response = await fetch(selectedImage);
+                    const originalBlob = await response.blob();
+                    const extension = originalBlob.type.split('/')[1] || 'jpg';
+                    filesToDownload.push({ blob: originalBlob, filename: `${filename}_original.${extension}` });
+                } catch (error) {
+                    console.error('Error fetching original image:', error);
+                }
+            }
+
+            // Download files
+            if (filesToDownload.length === 1) {
+                // Single file download
+                const { blob, filename: fileName } = filesToDownload[0];
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else if (filesToDownload.length > 1) {
+                // Multiple files - create ZIP
+                const JSZip = await import('https://cdn.skypack.dev/jszip');
+                const zip = new JSZip.default();
+
+                filesToDownload.forEach(({ blob, filename: fileName }) => {
+                    zip.file(fileName, blob);
+                });
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename}_export.zip`;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }
+
         } catch (error) {
             console.error('Error saving annotation:', error);
-            setError('Failed to save annotation. Please try again.');
+            setError('Failed to export files. Please try again.');
         }
     };
+
+    // Helper function to get all active dents (combining AI, modified AI, and manual)
+    const getAllActiveDents = () => {
+        const activeDents = {};
+        
+        // Add AI dents that haven't been deleted or modified
+        Object.entries(aiDents).forEach(([id, dent]) => {
+            if (!deletedDents.has(id) && !modifiedAiDents[id]) {
+                activeDents[id] = dent;
+            }
+        });
+
+        // Add modified AI dents that haven't been deleted
+        Object.entries(modifiedAiDents).forEach(([id, dent]) => {
+            if (!deletedDents.has(id)) {
+                activeDents[id] = dent;
+            }
+        });
+
+        // Add manual dents
+        Object.entries(manualDents).forEach(([id, dent]) => {
+            activeDents[id] = dent;
+        });
+
+        return activeDents;
+    };
+
+    // Helper function to get current dent data for a specific ID
+    const getCurrentDentData = (dentId) => {
+        if (dentId.startsWith('manual-')) {
+            return manualDents[dentId];
+        } else if (modifiedAiDents[dentId]) {
+            return modifiedAiDents[dentId];
+        } else {
+            return aiDents[dentId];
+        }
+    };
+
+    // Helper function to check if a dent is AI-detected
+    const isAIDent = (dentId) => {
+        return !dentId.startsWith('manual-');
+    };
+
+    useEffect(() => {
+        const hideInstructionsPref = localStorage.getItem('hideDentInstructions');
+        if (hideInstructionsPref === 'true') {
+            setHideInstructions(true);
+        }
+    }, []);
 
     useEffect(() => {
         const currentContainer = containerRef.current;
@@ -676,7 +1074,6 @@ const DentDetection = () => {
             };
         }
     }, [scale, position]);
-
 
     const handleMouseDown = useCallback((e) => {
         if (e.button !== 0 || isDrawingMode) return;
@@ -713,98 +1110,87 @@ const DentDetection = () => {
 
     const toggleDrawingMode = () => {
         if (!isDrawingMode) {
-            setShowInstructionModal(true);
+            if (!hideInstructions) {
+                setShowInstructionModal(true);
+                return; 
+            }
+            setIsDrawingMode(true);
+            setIsEditMode(false);
+            if (!selectedCategory) {
+                setSelectedCategory(Object.keys(DENT_CATEGORIES)[0]);
+            }
+        } else {
+            setIsDrawingMode(false);
+            setIsEditMode(false);
         }
-        setIsDrawingMode(!isDrawingMode);
+    };
+
+    const startDrawingMode = () => {
+        setIsDrawingMode(true);
         setIsEditMode(false);
-        if (!isDrawingMode && !selectedCategory) {
+        if (!selectedCategory) {
             setSelectedCategory(Object.keys(DENT_CATEGORIES)[0]);
         }
+        setShowInstructionModal(false);
+    };
+
+    const handleDontShowAgain = () => {
+        setHideInstructions(true);
+        localStorage.setItem('hideDentInstructions', 'true');
     };
 
     const handleFinishDrawing = async () => {
-        try {
-            await saveAnnotationToAPI();
-        } catch (error) {
-            console.error("Error auto-saving annotation:", error);
-        }
+        // Auto-save functionality could be implemented here if needed
+        console.log("Drawing finished, auto-saving...");
     };
 
-    const saveAnnotationToAPI = async () => {
-        try {
-            const dentData = Object.values(manualDents).map(dent => ({
-                center: { x: dent.center.x, y: dent.center.y },
-                x_size: dent.x_size,
-                y_size: dent.y_size,
-                category: dent.category
-            }));
-
-            console.log(`Saving ${dentData.length} dents locally only`);
-
-            if (isDrawingMode) {
-                setIsDrawingMode(false);
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Error saving annotation:', error);
-            setError('Failed to save annotation. Please try again.');
-            return false;
-        }
-    };
-
-
-
-    const combinedDents = {
-        ...(overlayData?.dent_locations || {}),
-        ...manualDents
-    };
-
-    const dentCounts = Object.values(combinedDents).reduce((acc, dent) => {
+    // Get all active dents and calculate stats
+    const allActiveDents = getAllActiveDents();
+    const dentCounts = Object.values(allActiveDents).reduce((acc, dent) => {
         acc[dent.category] = (acc[dent.category] || 0) + 1;
         return acc;
     }, {});
-
     const totalDents = Object.values(dentCounts).reduce((sum, count) => sum + count, 0);
 
-    const filteredDents = Object.entries(combinedDents)
+    const filteredDents = Object.entries(allActiveDents)
         .filter(([_, dent]) => !filterCategory || dent.category === filterCategory);
 
+    const currentSelectedDent = selectedDent ? getCurrentDentData(selectedDent) : null;
+
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            {/* Instructions Modal */}
+        <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
             <InstructionModal
                 isOpen={showInstructionModal}
                 onClose={() => setShowInstructionModal(false)}
+                onDontShowAgain={handleDontShowAgain}
+                onStartAnnotating={startDrawingMode}
             />
 
-            {/* Save Annotation Modal */}
             <SaveAnnotationModal
                 isOpen={showSaveModal}
                 onClose={() => setShowSaveModal(false)}
-                onSave={(filename) => {
-                    saveAnnotation(filename);
+                onSave={(filename, options) => {
+                    saveAnnotation(filename, options);
                     setShowSaveModal(false);
                 }}
             />
 
-            {/* Left Panel */}
-            <div className="w-72 bg-white border-r border-gray-200 p-6 shadow-lg">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-2">Results Summary</h2>
-                    <p className="text-3xl font-bold text-orange-600">{totalDents} Dents</p>
+            <div className="w-full lg:w-72 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 p-4 lg:p-6 shadow-lg order-2 lg:order-1">
+                <div className="mb-6 lg:mb-8">
+                    <h2 className="text-xl lg:text-2xl font-semibold mb-2">Results Summary</h2>
+                    <p className="text-2xl lg:text-3xl font-bold text-orange-600">{totalDents} Dents</p>
                 </div>
 
-                {selectedDent && combinedDents[selectedDent] && (
-                    <div className="mb-8">
-                        <h2 className="text-xl font-semibold mb-4">Selected Dent</h2>
-                        {isEditMode && selectedDent.startsWith('manual-') ? (
+                {selectedDent && currentSelectedDent && (
+                    <div className="mb-6 lg:mb-8">
+                        <h2 className="text-lg lg:text-xl font-semibold mb-4">Selected Dent</h2>
+                        {isEditMode ? (
                             <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div
                                             className="w-4 h-4 rounded-full"
-                                            style={{ backgroundColor: DENT_CATEGORIES[combinedDents[selectedDent].category].color }}
+                                            style={{ backgroundColor: DENT_CATEGORIES[currentSelectedDent.category].color }}
                                         />
                                         <span className="font-semibold">Edit Dent</span>
                                     </div>
@@ -822,7 +1208,7 @@ const DentDetection = () => {
                                             Category
                                         </label>
                                         <select
-                                            value={combinedDents[selectedDent].category}
+                                            value={currentSelectedDent.category}
                                             onChange={(e) => updateDent(selectedDent, 'category', e.target.value)}
                                             className="w-full p-2 border border-gray-300 rounded-md"
                                         >
@@ -841,7 +1227,7 @@ const DentDetection = () => {
                                                 <label className="block text-xs text-gray-500">X</label>
                                                 <input
                                                     type="number"
-                                                    value={Math.round(combinedDents[selectedDent].center.x)}
+                                                    value={Math.round(currentSelectedDent.center.x)}
                                                     onChange={(e) => updateDent(selectedDent, 'center.x', e.target.value)}
                                                     className="w-full p-2 border border-gray-300 rounded-md"
                                                 />
@@ -850,7 +1236,7 @@ const DentDetection = () => {
                                                 <label className="block text-xs text-gray-500">Y</label>
                                                 <input
                                                     type="number"
-                                                    value={Math.round(combinedDents[selectedDent].center.y)}
+                                                    value={Math.round(currentSelectedDent.center.y)}
                                                     onChange={(e) => updateDent(selectedDent, 'center.y', e.target.value)}
                                                     className="w-full p-2 border border-gray-300 rounded-md"
                                                 />
@@ -867,7 +1253,7 @@ const DentDetection = () => {
                                                 <label className="block text-xs text-gray-500">Width</label>
                                                 <input
                                                     type="number"
-                                                    value={Math.round(combinedDents[selectedDent].x_size)}
+                                                    value={Math.round(currentSelectedDent.x_size)}
                                                     onChange={(e) => updateDent(selectedDent, 'x_size', e.target.value)}
                                                     className="w-full p-2 border border-gray-300 rounded-md"
                                                 />
@@ -876,7 +1262,7 @@ const DentDetection = () => {
                                                 <label className="block text-xs text-gray-500">Height</label>
                                                 <input
                                                     type="number"
-                                                    value={Math.round(combinedDents[selectedDent].y_size)}
+                                                    value={Math.round(currentSelectedDent.y_size)}
                                                     onChange={(e) => updateDent(selectedDent, 'y_size', e.target.value)}
                                                     className="w-full p-2 border border-gray-300 rounded-md"
                                                 />
@@ -904,8 +1290,8 @@ const DentDetection = () => {
                             </div>
                         ) : (
                             <DentDetails
-                                dent={combinedDents[selectedDent]}
-                                category={combinedDents[selectedDent].category}
+                                dent={currentSelectedDent}
+                                category={currentSelectedDent.category}
                                 dentId={selectedDent}
                                 onEdit={handleEditDent}
                                 onDelete={handleDeleteDent}
@@ -915,7 +1301,7 @@ const DentDetection = () => {
                 )}
 
                 <div>
-                    <h2 className="text-xl font-semibold mb-4">Categories</h2>
+                    <h2 className="text-lg lg:text-xl font-semibold mb-4">Categories</h2>
 
                     {filterCategory !== null && (
                         <button
@@ -927,11 +1313,11 @@ const DentDetection = () => {
                         </button>
                     )}
 
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:gap-3 lg:space-y-0">
                         {Object.entries(DENT_CATEGORIES).map(([key, { color, label }]) => (
                             <div
                                 key={key}
-                                className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200
+                                className={`flex items-center justify-between p-2 lg:p-3 rounded-lg transition-all duration-200 cursor-pointer
                     ${filterCategory === key ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
                     ${isDrawingMode && selectedCategory === key ? 'ring-2 ring-orange-500' : ''}`}
                                 onClick={() => {
@@ -942,108 +1328,192 @@ const DentDetection = () => {
                                     }
                                 }}
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 lg:gap-3">
                                     <div
-                                        className="w-5 h-5 rounded-full"
+                                        className="w-4 h-4 lg:w-5 lg:h-5 rounded-full flex-shrink-0"
                                         style={{ backgroundColor: color }}
                                     />
-                                    <span className="font-medium">{label}</span>
+                                    <span className="font-medium text-sm lg:text-base truncate">{label}</span>
                                 </div>
-                                <span className="text-lg font-semibold">{dentCounts[key] || 0}</span>
+                                <span className="text-base lg:text-lg font-semibold">{dentCounts[key] || 0}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {selectedImage && (
-                    <div className="mt-8 space-y-3">
+                    <div className="mt-6 lg:mt-8 space-y-3">
                         <button
                             onClick={() => setShowSaveModal(true)}
                             className="w-full flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-orange-200"
                         >
-                            <Download className="w-5 h-5" />
-                            Export Analysis
+                            <Download className="w-4 h-4 lg:w-5 lg:h-5" />
+                            <span className="text-sm lg:text-base">Export Analysis</span>
+                        </button>
+                        
+                        <button
+                            onClick={() => window.open('https://calendly.com/team-obai/intro-conversation', '_blank')}
+                            className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-blue-200"
+                        >
+                            <Calendar className="w-4 h-4 lg:w-5 lg:h-5" />
+                             <span className="text-sm lg:text-base">Request Batch Access</span>
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 p-6">
-                <div className="bg-white rounded-xl shadow-xl p-6 h-full flex flex-col">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => fileInputRef.current.click()}
-                                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-3 transition-colors duration-200 shadow-md"
-                                disabled={isLoading}
-                            >
-                                <Upload className="w-5 h-5" />
-                                {isLoading ? 'Processing...' : 'Upload Image'}
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                    disabled={isLoading}
-                                />
-                            </button>
-
-                            {isDrawingMode && selectedCategory && (
-                                <div className="flex items-center px-4 py-2 bg-gray-100 rounded-lg">
-                                    <span>Drawing: </span>
-                                    <div
-                                        className="ml-2 w-4 h-4 rounded-full"
-                                        style={{ backgroundColor: DENT_CATEGORIES[selectedCategory].color }}
-                                    />
-                                    <span className="ml-1 font-medium">{DENT_CATEGORIES[selectedCategory].label}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => adjustScale(-SCALE_STEP)}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                                disabled={scale <= MIN_SCALE}
-                            >
-                                <ZoomOut className="w-5 h-5" />
-                                Zoom Out
-                            </button>
-                            <button
-                                onClick={() => adjustScale(SCALE_STEP)}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                                disabled={scale >= MAX_SCALE}
-                            >
-                                <ZoomIn className="w-5 h-5" />
-                                Zoom In
-                            </button>
-                            <button
-                                onClick={toggleDrawingMode}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200
-                                    ${isDrawingMode
-                                        ? 'bg-orange-600 text-white hover:bg-orange-700'
-                                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                            >
-                                <Edit2 className="w-5 h-5" />
-                                {isDrawingMode ? 'Exit  Annotate' : 'Annotate'}
-                            </button>
-                            {isDrawingMode && (
+            <div className="flex-1 p-4 lg:p-6 order-1 lg:order-2 min-h-screen lg:min-h-0">
+                <div className="bg-white rounded-xl shadow-xl p-4 lg:p-6 h-full flex flex-col min-h-[70vh] lg:min-h-0">
+                    {/* Header Section */}
+                    <div className="mb-4 lg:mb-6 space-y-4">
+                        {/* Top Row - Main Actions */}
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                                 <button
-                                    onClick={() => setShowInstructionModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                                    onClick={() => fileInputRef.current.click()}
+                                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center gap-2 lg:gap-3 transition-colors duration-200 shadow-md text-sm lg:text-base font-medium"
+                                    disabled={isLoading}
                                 >
-                                    <Info className="w-5 h-5" />
-                                    Help
+                                    <Upload className="w-4 h-4 lg:w-5 lg:h-5" />
+                                    {isLoading ? 'Processing...' : 'Upload Image'}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        disabled={isLoading}
+                                    />
                                 </button>
-                            )}
+
+                                {!isDrawingMode && (
+                                    <div className="hidden sm:block p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p className="text-xs lg:text-sm text-blue-700">
+                                            Need to upload multiple images?{' '}
+                                            <a
+                                                href="https://calendly.com/team-obai/intro-conversation"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 font-medium text-blue-800 hover:text-blue-900 underline decoration-2 underline-offset-2 transition-colors duration-200"
+                                            >
+                                                <Calendar className="w-3 h-3" />
+                                                Talk to our team
+                                                <ArrowRight className="w-3 h-3" />
+                                            </a>
+                                            {' '}for batch processing access.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Control Buttons */}
+                            <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+                                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
+                                    <button
+                                        onClick={() => adjustScale(-SCALE_STEP)}
+                                        className="flex items-center gap-1 px-2 lg:px-3 py-1.5 bg-white hover:bg-gray-100 rounded transition-colors duration-200 text-sm lg:text-base shadow-sm"
+                                        disabled={scale <= MIN_SCALE}
+                                    >
+                                        <ZoomOut className="w-4 h-4" />
+                                        <span className="hidden sm:inline text-xs lg:text-sm">Out</span>
+                                    </button>
+                                    <span className="text-xs lg:text-sm text-gray-600 px-2 font-mono">
+                                        {Math.round(scale * 100)}%
+                                    </span>
+                                    <button
+                                        onClick={() => adjustScale(SCALE_STEP)}
+                                        className="flex items-center gap-1 px-2 lg:px-3 py-1.5 bg-white hover:bg-gray-100 rounded transition-colors duration-200 text-sm lg:text-base shadow-sm"
+                                        disabled={scale >= MAX_SCALE}
+                                    >
+                                        <ZoomIn className="w-4 h-4" />
+                                        <span className="hidden sm:inline text-xs lg:text-sm">In</span>
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={toggleDrawingMode}
+                                    className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 text-sm lg:text-base font-medium shadow-sm
+                                        ${isDrawingMode
+                                            ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
+                                            : 'bg-white text-gray-800 hover:bg-gray-50 border border-gray-200'}`}
+                                    disabled={!selectedImage}
+                                >
+                                    <Edit2 className="w-4 h-4 lg:w-5 lg:h-5" />
+                                    <span>{isDrawingMode ? 'Exit Annotate' : 'Annotate'}</span>
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Annotation Mode Bar */}
+                        {isDrawingMode && (
+                            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 shadow-sm">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                                            <span className="font-semibold text-orange-800 text-sm lg:text-base">
+                                                Annotation Mode Active
+                                            </span>
+                                        </div>
+                                        
+                                        {selectedCategory && (
+                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-orange-200 shadow-sm">
+                                                <span className="text-sm text-gray-600">Drawing:</span>
+                                                <div
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ backgroundColor: DENT_CATEGORIES[selectedCategory].color }}
+                                                />
+                                                <span className="font-medium text-sm text-gray-800">
+                                                    {DENT_CATEGORIES[selectedCategory].label}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setShowInstructionModal(true)}
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 text-sm font-medium"
+                                        >
+                                            <Info className="w-4 h-4" />
+                                            <span>Help</span>
+                                        </button>
+                                        
+                                        <div className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                                            Click & drag to mark dents
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mobile Notice (only when not in drawing mode) */}
+                        {!isDrawingMode && (
+                            <div className="sm:hidden p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-xs text-blue-700">
+                                    Need multiple images?{' '}
+                                    <a
+                                        href="https://calendly.com/team-obai/intro-conversation"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 font-medium text-blue-800 hover:text-blue-900 underline decoration-2 underline-offset-2 transition-colors duration-200"
+                                    >
+                                        <Calendar className="w-3 h-3" />
+                                        Talk to team
+                                        <ArrowRight className="w-3 h-3" />
+                                    </a>
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div
                         ref={containerRef}
-                        className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden ${isDrawingMode ? 'cursor-crosshair' : 'cursor-grab'}`}
+                        className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden h-64 sm:h-80 md:h-96 lg:min-h-96 lg:h-full transition-all duration-200 ${
+                            isDrawingMode 
+                                ? 'cursor-crosshair ring-2 ring-orange-300 ring-opacity-50' 
+                                : 'cursor-grab'
+                        }`}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
@@ -1057,7 +1527,7 @@ const DentDetection = () => {
                     >
 
                         <div
-                            className="absolute origin-top-left"
+                            className="absolute origin-top-left w-full h-full"
                             style={{
                                 transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
                                 transition: isDragging ? 'none' : 'transform 0.15s ease-out'
@@ -1069,8 +1539,13 @@ const DentDetection = () => {
                                         ref={imageRef}
                                         src={selectedImage}
                                         alt="Uploaded"
-                                        className="max-w-none"
+                                        className="max-w-none block"
                                         onLoad={handleImageLoad}
+                                        style={{
+                                            maxHeight: 'none',
+                                            height: 'auto',
+                                            width: 'auto'
+                                        }}
                                     />
                                     {filteredDents.map(([id, dent]) => (
                                         <DentOverlay
@@ -1094,7 +1569,6 @@ const DentDetection = () => {
                             )}
                         </div>
 
-                        {/* Drawing canvas layer */}
                         {isDrawingMode && selectedImage && (
                             <DrawingCanvas
                                 imageRef={imageRef}
@@ -1107,17 +1581,17 @@ const DentDetection = () => {
                         )}
 
                         {!selectedImage && (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-lg">
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-base lg:text-lg text-center px-4">
                                 Upload an image to begin analysis
                             </div>
                         )}
 
                         {isLoading && (
                             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                <div className="bg-white rounded-lg p-6 shadow-xl">
+                                <div className="bg-white rounded-lg p-4 lg:p-6 shadow-xl mx-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-t-transparent"></div>
-                                        <div className="text-xl">Processing image...</div>
+                                        <div className="animate-spin rounded-full h-6 w-6 lg:h-8 lg:w-8 border-4 border-orange-500 border-t-transparent"></div>
+                                        <div className="text-lg lg:text-xl">Processing image...</div>
                                     </div>
                                 </div>
                             </div>
@@ -1125,17 +1599,17 @@ const DentDetection = () => {
                     </div>
 
                     {error && (
-                        <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
-                            <X className="w-5 h-5" />
-                            {error}
+                        <div className="mt-4 p-3 lg:p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-2">
+                            <X className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+                            <span className="text-sm lg:text-base">{error}</span>
                         </div>
                     )}
 
-                    <div className="mt-4 flex justify-between items-center text-gray-600">
-                        <div className="text-sm">
+                    <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center text-gray-600 space-y-2 sm:space-y-0">
+                        <div className="text-xs lg:text-sm">
                             {imageSize.width > 0 && `Image size: ${imageSize.width}x${imageSize.height}px`}
                         </div>
-                        <div className="font-medium">
+                        <div className="font-medium text-sm lg:text-base">
                             Zoom: {Math.round(scale * 100)}%
                         </div>
                     </div>
