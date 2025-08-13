@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Calendar, Monitor, ArrowRight } from 'lucide-react';
+import { Menu, X, Home, Calendar, Monitor, ArrowRight, Calculator } from 'lucide-react';
 import MainPage from './pages/MainPage';
 import DentDetection from './components/DentDetection';
 import logo from "/src/assets/OBAI_Branding_FullColorLogo.png"
+import Appraiser from './components/Appraiser';
 
 const NavItem = ({ to, children, isExternal = false, href, onClose }) => {
   const location = useLocation();
@@ -89,6 +90,15 @@ const MobileMenu = ({ isOpen, onClose }) => (
                 <span className="font-medium">Dent Detection</span>
               </div>
             </NavItem>
+
+            <NavItem to="/appraiser" onClose={onClose}>
+              <div className="flex items-center space-x-4">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <Calculator className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="font-medium">Appraiser Tools</span>
+              </div>
+            </NavItem>
           </div>
 
           {/* Elegant Divider */}
@@ -156,6 +166,7 @@ function Navigation() {
             <div className="hidden md:flex items-center space-x-2">
               <NavItem to="/">Home</NavItem>
               <NavItem to="/display">Dent Detection</NavItem>
+              <NavItem to="/appraiser">Appraiser Tools</NavItem>
               
               {/* Desktop CTA Button */}
               <div className="ml-8 pl-8 border-l border-gray-200">
@@ -202,6 +213,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/display" element={<DentDetection />} />
+            <Route path="/appraiser" element={<Appraiser />} />
           </Routes>
         </main>
       </div>
