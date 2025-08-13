@@ -96,7 +96,7 @@ const MobileMenu = ({ isOpen, onClose }) => (
                 <div className="p-2 bg-green-50 rounded-lg">
                   <Calculator className="w-5 h-5 text-green-600" />
                 </div>
-                <span className="font-medium">Appraiser Tools</span>
+                <span className="font-medium">Appraisal Tech</span>
               </div>
             </NavItem>
           </div>
@@ -166,7 +166,7 @@ function Navigation() {
             <div className="hidden md:flex items-center space-x-2">
               <NavItem to="/">Home</NavItem>
               <NavItem to="/display">Dent Detection</NavItem>
-              <NavItem to="/appraiser">Appraiser Tools</NavItem>
+              <NavItem to="/appraiser">Appraisal Tech</NavItem>
               
               {/* Desktop CTA Button */}
               <div className="ml-8 pl-8 border-l border-gray-200">

@@ -62,16 +62,16 @@ const mainTools = [
   {
     icon: Cpu,
     title: "AI Dent Detection",
-    description: "Upload vehicle photos and get dent counts by size (Nickel, Quarter, Half-Dollar, Oversize). Review and adjust in minutes.",
+    description: "Upload photos and get dent counts by size (Nickel, Quarter, Half-Dollar, Oversize). Review and adjust in minutes.",
     linkTo: "/display",
     linkText: "Start Detection"
   },
   {
     icon: Link2,
-    title: "Appraiser Tools (Vehicle Verification)",
-    description: "Create a claim, capture adjuster details, and issue a secure verification link to a claimant. Submissions attach to the claim automatically.",
+    title: "Appraisal Tech - Vehicle Verification",
+    description: "Appraisal Tech is a growing suite of tools. Start with Vehicle Verification: create a claim, capture adjuster details, and send a secure link. Submissions attach to the claim automatically.",
     linkTo: "/appraiser",
-    linkText: "Open Appraiser Tools"
+    linkText: "Open Appraisal Tech"
   }
 ];
 
@@ -80,25 +80,25 @@ const appraiserSteps = [
     number: 1,
     icon: Settings,
     title: "Create Public Claim",
-    description: "Upload the claim document (optional) and enter the adjuster's first name, last name, and email. The claim is created automatically."
+    description: "Upload the claim document (optional) and enter the adjuster's first name, last name, and email."
   },
   {
     number: 2,
     icon: Link2,
     title: "Send Secure Link",
-    description: "A scoped, expiring verification link (no login) is generated and sent to the claimant."
+    description: "A scoped, expiring verification link (no login) is sent to the claimant."
   },
   {
     number: 3,
     icon: Eye,
     title: "Claimant Completes Verification",
-    description: "The claimant opens the link and follows the steps to submit required photos and details."
+    description: "They open the link and submit the required photos and details."
   },
   {
     number: 4,
     icon: CheckCircle,
     title: "Receive Results",
-    description: "Photos and notes post into the claim automatically. You also receive a confirmation email with the submission summary."
+    description: "Photos and notes post into the claim automatically. A confirmation email includes the submission summary."
   }
 ];
 
@@ -107,7 +107,7 @@ const detectionSteps = [
     number: 1,
     icon: Upload,
     title: "Upload Photos",
-    description: "Front, rear, sides, and roof - or use your standard capture set."
+    description: "Front, rear, sides, roof—or your standard capture set."
   },
   {
     number: 2,
@@ -176,10 +176,10 @@ export default function MainPage() {
         {/* Hero Section */}
         <div className="text-center">
           <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600 sm:text-6xl md:text-7xl">
-            Dent Detection & Vehicle Verification - simple, fast
+            Dent Detection & Appraisal Tech - simple, fast
           </h1>
           <p className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Run AI dent detection or send a secure verification link to a claimant. No logins. Results land in the claim automatically.
+            Two options: run AI dent detection or send a secure verification link. No logins.
           </p>
 
           {/* CTA Buttons */}
@@ -196,7 +196,7 @@ export default function MainPage() {
               className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-orange-500 bg-white hover:bg-gray-50 rounded-lg shadow-lg transition-colors duration-200 border border-orange-100 space-x-2"
             >
               <Link2 className="w-5 h-5" />
-              <span>Open Appraiser Tools</span>
+              <span>Open Appraisal Tech</span>
             </Link>
           </div>
 
@@ -209,7 +209,7 @@ export default function MainPage() {
         {/* What You Can Do - Main Tools */}
         <div className="mt-32">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-16">
-            What You Can Do
+            Choose Your Tool
           </h2>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             {mainTools.map((tool, index) => (
@@ -221,7 +221,7 @@ export default function MainPage() {
         {/* How it Works - Appraiser Tools */}
         <div className="mt-32">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-16">
-            How it Works - Appraiser Tools (Vehicle Verification)
+            How it Works - Appraisal Tech (Vehicle Verification)
           </h2>
           <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 mb-12">
             {appraiserSteps.map((step, index) => (
@@ -234,7 +234,7 @@ export default function MainPage() {
               className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-lg transition-colors duration-200 space-x-2"
             >
               <Link2 className="w-5 h-5" />
-              <span>Open Appraiser Tools</span>
+              <span>Open Appraisal Tech</span>
             </Link>
           </div>
         </div>
