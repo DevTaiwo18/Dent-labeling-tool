@@ -91,7 +91,7 @@ const InstructionModal = ({ isOpen, onClose, onDontShowAgain, onStartAnnotating 
                             />
                             Don't show this again
                         </label>
-                        
+
                         <div className="flex gap-2">
                             <button
                                 onClick={onClose}
@@ -458,14 +458,13 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-3">
                             Export Options
                         </label>
-                        
+
                         <div className="space-y-3">
-                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                                exportOptions.json 
-                                    ? 'border-orange-500 bg-orange-50' 
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.json
+                                    ? 'border-orange-500 bg-orange-50'
                                     : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => toggleOption('json')}>
+                                }`}
+                                onClick={() => toggleOption('json')}>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
@@ -480,12 +479,11 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                                 </div>
                             </div>
 
-                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                                exportOptions.annotatedImage 
-                                    ? 'border-orange-500 bg-orange-50' 
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.annotatedImage
+                                    ? 'border-orange-500 bg-orange-50'
                                     : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => toggleOption('annotatedImage')}>
+                                }`}
+                                onClick={() => toggleOption('annotatedImage')}>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
@@ -500,12 +498,11 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                                 </div>
                             </div>
 
-                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                                exportOptions.originalImage 
-                                    ? 'border-orange-500 bg-orange-50' 
+                            <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.originalImage
+                                    ? 'border-orange-500 bg-orange-50'
                                     : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => toggleOption('originalImage')}>
+                                }`}
+                                onClick={() => toggleOption('originalImage')}>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
@@ -584,23 +581,23 @@ const DentDetection = () => {
     const handleImageLoad = (event) => {
         const { naturalWidth, naturalHeight } = event.target;
         setImageSize({ width: naturalWidth, height: naturalHeight });
-        
+
         if (containerRef.current) {
             const container = containerRef.current;
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientHeight;
-            
+
             const scaleX = containerWidth / naturalWidth;
             const scaleY = containerHeight / naturalHeight;
             const initialScale = Math.min(scaleX, scaleY, 1);
-            
+
             setScale(initialScale);
-            
+
             const scaledWidth = naturalWidth * initialScale;
             const scaledHeight = naturalHeight * initialScale;
             const centerX = (containerWidth - scaledWidth) / 2;
             const centerY = (containerHeight - scaledHeight) / 2;
-            
+
             setPosition({ x: centerX, y: centerY });
         }
     };
@@ -699,14 +696,14 @@ const DentDetection = () => {
     const updateDent = (dentId, property, value) => {
         const updateDentData = (dent, property, value) => {
             const updatedDent = { ...dent };
-            
+
             if (property.includes('.')) {
                 const [parent, child] = property.split('.');
                 updatedDent[parent] = { ...updatedDent[parent], [child]: parseFloat(value) };
             } else {
                 updatedDent[property] = property === 'category' ? value : parseFloat(value);
             }
-            
+
             return updatedDent;
         };
 
@@ -762,7 +759,7 @@ const DentDetection = () => {
             const padding = 100;
             const headerHeight = 80;
             const footerHeight = 60;
-            
+
             canvas.width = img.naturalWidth + (padding * 2);
             canvas.height = img.naturalHeight + headerHeight + footerHeight + (padding * 2);
 
@@ -772,21 +769,21 @@ const DentDetection = () => {
 
             // Add header with title and branding
             const headerY = padding;
-            
+
             // Title
             ctx.fillStyle = '#1f2937';
             ctx.font = 'bold 32px Arial, sans-serif';
             ctx.textAlign = 'left';
             const title = 'Dent Analysis Report';
             ctx.fillText(title, padding, headerY + 30);
-            
+
             // Subtitle with date
             ctx.fillStyle = '#6b7280';
             ctx.font = '18px Arial, sans-serif';
-            const date = new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            const date = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
             });
             ctx.fillText(`Generated on ${date}`, padding, headerY + 60);
 
@@ -795,7 +792,7 @@ const DentDetection = () => {
             ctx.font = 'bold 24px Arial, sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText('Obai', canvas.width - padding, headerY + 30);
-            
+
             ctx.fillStyle = '#9ca3af';
             ctx.font = '14px Arial, sans-serif';
             ctx.fillText('Professional Dent Analysis Solution', canvas.width - padding, headerY + 50);
@@ -820,7 +817,7 @@ const DentDetection = () => {
                 const EXPANSION_FACTOR = 1.2;
                 const expandedXSize = dent.x_size * EXPANSION_FACTOR;
                 const expandedYSize = dent.y_size * EXPANSION_FACTOR;
-                
+
                 const left = padding + Math.max(0, Math.min(
                     dent.center.x - (expandedXSize / 2),
                     img.naturalWidth - expandedXSize
@@ -856,25 +853,25 @@ const DentDetection = () => {
                 ctx.strokeStyle = category.color;
                 ctx.lineWidth = 4;
                 ctx.textAlign = 'left';
-                
+
                 const textMetrics = ctx.measureText(labelText);
                 const labelX = Math.max(padding + 5, Math.min(left, canvas.width - textMetrics.width - 15));
                 const labelY = Math.max(imageY + 25, top - 8);
-                
+
                 // Label background
                 ctx.fillStyle = category.color;
                 ctx.fillRect(labelX - 5, labelY - 18, textMetrics.width + 10, 22);
-                
+
                 ctx.fillStyle = 'white';
                 ctx.fillText(labelText, labelX, labelY);
 
                 // Draw coordinates and dimensions
                 const coordText = `(${Math.round(dent.center.x)}, ${Math.round(dent.center.y)})`;
                 const dimText = `${Math.round(dent.x_size)}×${Math.round(dent.y_size)}px`;
-                
+
                 ctx.font = '12px Arial, sans-serif';
                 ctx.fillStyle = '#374151';
-                
+
                 const coordY = Math.min(canvas.height - footerHeight - 25, top + expandedYSize + 15);
                 ctx.fillText(coordText, labelX, coordY);
                 ctx.fillText(dimText, labelX, coordY + 15);
@@ -882,20 +879,20 @@ const DentDetection = () => {
 
             // Footer with summary and branding
             const footerY = canvas.height - footerHeight;
-            
+
             // Summary statistics
             ctx.fillStyle = '#374151';
             ctx.font = 'bold 18px Arial, sans-serif';
             ctx.textAlign = 'left';
             const totalDents = Object.keys(getAllActiveDents()).length;
             ctx.fillText(`Total Dents Found: ${totalDents}`, padding, footerY + 25);
-            
+
             // Category breakdown
             const dentCounts = Object.values(getAllActiveDents()).reduce((acc, dent) => {
                 acc[dent.category] = (acc[dent.category] || 0) + 1;
                 return acc;
             }, {});
-            
+
             ctx.font = '14px Arial, sans-serif';
             ctx.fillStyle = '#6b7280';
             let breakdownText = 'Categories: ';
@@ -918,7 +915,7 @@ const DentDetection = () => {
     const saveAnnotation = async (filename = 'dent-analysis', options = { json: true }) => {
         try {
             const filesToDownload = [];
-            
+
             // Prepare JSON data
             if (options.json) {
                 const allDents = getAllActiveDents();
@@ -998,7 +995,7 @@ const DentDetection = () => {
     // Helper function to get all active dents (combining AI, modified AI, and manual)
     const getAllActiveDents = () => {
         const activeDents = {};
-        
+
         // Add AI dents that haven't been deleted or modified
         Object.entries(aiDents).forEach(([id, dent]) => {
             if (!deletedDents.has(id) && !modifiedAiDents[id]) {
@@ -1112,7 +1109,7 @@ const DentDetection = () => {
         if (!isDrawingMode) {
             if (!hideInstructions) {
                 setShowInstructionModal(true);
-                return; 
+                return;
             }
             setIsDrawingMode(true);
             setIsEditMode(false);
@@ -1350,13 +1347,13 @@ const DentDetection = () => {
                             <Download className="w-4 h-4 lg:w-5 lg:h-5" />
                             <span className="text-sm lg:text-base">Export Analysis</span>
                         </button>
-                        
+
                         <button
                             onClick={() => window.open('https://calendly.com/team-obai/intro-conversation', '_blank')}
                             className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg transition-colors duration-200 border border-blue-200"
                         >
                             <Calendar className="w-4 h-4 lg:w-5 lg:h-5" />
-                             <span className="text-sm lg:text-base">Request Batch Access</span>
+                            <span className="text-sm lg:text-base">Request Batch Access</span>
                         </button>
                     </div>
                 )}
@@ -1389,7 +1386,7 @@ const DentDetection = () => {
                                 {!isDrawingMode && (
                                     <div className="hidden sm:block p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <p className="text-xs lg:text-sm text-blue-700">
-                                            Need to upload multiple images?{' '}
+                                            Need multiple images?{' '}
                                             <a
                                                 href="https://calendly.com/team-obai/intro-conversation"
                                                 target="_blank"
@@ -1400,7 +1397,6 @@ const DentDetection = () => {
                                                 Talk to our team
                                                 <ArrowRight className="w-3 h-3" />
                                             </a>
-                                            {' '}for batch processing access.
                                         </p>
                                     </div>
                                 )}
@@ -1455,7 +1451,7 @@ const DentDetection = () => {
                                                 Annotation Mode Active
                                             </span>
                                         </div>
-                                        
+
                                         {selectedCategory && (
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-orange-200 shadow-sm">
                                                 <span className="text-sm text-gray-600">Drawing:</span>
@@ -1478,7 +1474,7 @@ const DentDetection = () => {
                                             <Info className="w-4 h-4" />
                                             <span>Help</span>
                                         </button>
-                                        
+
                                         <div className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
                                             Click & drag to mark dents
                                         </div>
@@ -1509,11 +1505,10 @@ const DentDetection = () => {
 
                     <div
                         ref={containerRef}
-                        className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden h-64 sm:h-80 md:h-96 lg:min-h-96 lg:h-full transition-all duration-200 ${
-                            isDrawingMode 
-                                ? 'cursor-crosshair ring-2 ring-orange-300 ring-opacity-50' 
+                        className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden h-64 sm:h-80 md:h-96 lg:min-h-96 lg:h-full transition-all duration-200 ${isDrawingMode
+                                ? 'cursor-crosshair ring-2 ring-orange-300 ring-opacity-50'
                                 : 'cursor-grab'
-                        }`}
+                            }`}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
