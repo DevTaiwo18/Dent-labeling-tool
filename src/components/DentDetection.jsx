@@ -461,8 +461,8 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
 
                         <div className="space-y-3">
                             <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.json
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-orange-500 bg-orange-50'
+                                : 'border-gray-200 hover:border-gray-300'
                                 }`}
                                 onClick={() => toggleOption('json')}>
                                 <div className="flex items-center gap-3">
@@ -480,8 +480,8 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                             </div>
 
                             <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.annotatedImage
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-orange-500 bg-orange-50'
+                                : 'border-gray-200 hover:border-gray-300'
                                 }`}
                                 onClick={() => toggleOption('annotatedImage')}>
                                 <div className="flex items-center gap-3">
@@ -499,8 +499,8 @@ const SaveAnnotationModal = ({ isOpen, onClose, onSave }) => {
                             </div>
 
                             <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${exportOptions.originalImage
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-orange-500 bg-orange-50'
+                                : 'border-gray-200 hover:border-gray-300'
                                 }`}
                                 onClick={() => toggleOption('originalImage')}>
                                 <div className="flex items-center gap-3">
@@ -1176,6 +1176,13 @@ const DentDetection = () => {
                 <div className="mb-6 lg:mb-8">
                     <h2 className="text-xl lg:text-2xl font-semibold mb-2">Results Summary</h2>
                     <p className="text-2xl lg:text-3xl font-bold text-orange-600">{totalDents} Dents</p>
+
+                    {/* AI Disclaimer - Always visible */}
+                    <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs text-amber-700 text-center">
+                            AI can make mistakes, ensure you use your own discretion
+                        </p>
+                    </div>
                 </div>
 
                 {selectedDent && currentSelectedDent && (
@@ -1506,8 +1513,8 @@ const DentDetection = () => {
                     <div
                         ref={containerRef}
                         className={`relative flex-1 bg-gray-100 rounded-lg overflow-hidden h-64 sm:h-80 md:h-96 lg:min-h-96 lg:h-full transition-all duration-200 ${isDrawingMode
-                                ? 'cursor-crosshair ring-2 ring-orange-300 ring-opacity-50'
-                                : 'cursor-grab'
+                            ? 'cursor-crosshair ring-2 ring-orange-300 ring-opacity-50'
+                            : 'cursor-grab'
                             }`}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
