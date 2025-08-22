@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Menu, X, Home, Calendar, Monitor, ArrowRight, Calculator } from 'lucide-react';
 import MainPage from './pages/MainPage';
 import DentDetection from './components/DentDetection';
 import logo from "/src/assets/OBAI_Branding_FullColorLogo.png"
 import Appraiser from './components/Appraiser';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 const NavItem = ({ to, children, isExternal = false, href, onClose }) => {
   const location = useLocation();
@@ -208,6 +218,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <ScrollToTop />
         <Navigation />
         <main className="relative">
           <Routes>
