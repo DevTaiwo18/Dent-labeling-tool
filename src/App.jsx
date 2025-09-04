@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Menu, X, Home, Calendar, Monitor, ArrowRight, Calculator } from 'lucide-react';
+import LogRocket from 'logrocket';
 import MainPage from './pages/MainPage';
 import DentDetection from './components/DentDetection';
 import logo from "/src/assets/OBAI_Branding_FullColorLogo.png"
@@ -155,6 +156,12 @@ const MobileMenu = ({ isOpen, onClose }) => (
 
 function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Track route changes with LogRocket
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <>
@@ -214,20 +221,50 @@ function Navigation() {
   );
 }
 
+// Component that handles LogRocket initialization and routing
+function AppContent() {
+  const location = useLocation();
+
+  // Initialize LogRocket
+  useEffect(() => {
+    LogRocket.init('obai-jpwyy/obai-frontend');
+
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
+    
+    const anonymousId = `${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
+    
+    LogRocket.identify(anonymousId, {
+      name: `Anonymous User ${anonymousId}`,
+      visitTime: now.toISOString()
+    });
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <ScrollToTop />
+      <Navigation />
+      <main className="relative">
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/display" element={<DentDetection />} />
+          <Route path="/appraiser" element={<Appraiser />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-        <ScrollToTop />
-        <Navigation />
-        <main className="relative">
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/display" element={<DentDetection />} />
-            <Route path="/appraiser" element={<Appraiser />} />
-          </Routes>
-        </main>
-      </div>
+      <AppContent />
     </Router>
   );
 }
