@@ -555,10 +555,10 @@ const DentDetection = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [selectedImage, setSelectedImage] = useState(null);
-    const [aiDents, setAiDents] = useState({}); // AI detected dents
-    const [manualDents, setManualDents] = useState({}); // Manually added dents
-    const [modifiedAiDents, setModifiedAiDents] = useState({}); // Modified AI dents
-    const [deletedDents, setDeletedDents] = useState(new Set()); // Deleted dent IDs
+    const [aiDents, setAiDents] = useState({});
+    const [manualDents, setManualDents] = useState({});
+    const [modifiedAiDents, setModifiedAiDents] = useState({});
+    const [deletedDents, setDeletedDents] = useState(new Set());
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -644,31 +644,7 @@ const DentDetection = () => {
                 setAiDents(data.dent_locations || {});
             } catch (apiError) {
                 console.error("API Error:", apiError);
-
-                console.log("Falling back to sample data for testing");
-                const mockData = {
-                    "dent_1": {
-                        "center": { "x": 150, "y": 200 },
-                        "x_size": 45,
-                        "y_size": 30,
-                        "category": "nickel"
-                    },
-                    "dent_2": {
-                        "center": { "x": 350, "y": 180 },
-                        "x_size": 60,
-                        "y_size": 35,
-                        "category": "quarter"
-                    },
-                    "dent_3": {
-                        "center": { "x": 250, "y": 300 },
-                        "x_size": 85,
-                        "y_size": 45,
-                        "category": "half_dollar"
-                    }
-                };
-
-                setAiDents(mockData);
-                setError('Could not connect to AI service. Using sample data instead.');
+                setError('This image format is not supported. Please try uploading a different image (JPG, PNG, or JPEG).');
             }
         } catch (error) {
             setError('Failed to process image. Please try again.');
@@ -708,13 +684,11 @@ const DentDetection = () => {
         };
 
         if (dentId.startsWith('manual-')) {
-            // Update manual dent
             setManualDents(prev => ({
                 ...prev,
                 [dentId]: updateDentData(prev[dentId], property, value)
             }));
         } else {
-            // Update AI dent - move to modified collection
             const originalDent = aiDents[dentId] || modifiedAiDents[dentId];
             if (originalDent) {
                 setModifiedAiDents(prev => ({
@@ -727,14 +701,12 @@ const DentDetection = () => {
 
     const handleDeleteDent = (dentId) => {
         if (dentId.startsWith('manual-')) {
-            // Delete manual dent
             setManualDents(prev => {
                 const newDents = { ...prev };
                 delete newDents[dentId];
                 return newDents;
             });
         } else {
-            // Mark AI dent as deleted
             setDeletedDents(prev => new Set([...prev, dentId]));
         }
 
@@ -755,7 +727,6 @@ const DentDetection = () => {
             const ctx = canvas.getContext('2d');
             const img = imageRef.current;
 
-            // Add padding for branding and title
             const padding = 100;
             const headerHeight = 80;
             const footerHeight = 60;
@@ -763,21 +734,17 @@ const DentDetection = () => {
             canvas.width = img.naturalWidth + (padding * 2);
             canvas.height = img.naturalHeight + headerHeight + footerHeight + (padding * 2);
 
-            // Fill background with white
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Add header with title and branding
             const headerY = padding;
 
-            // Title
             ctx.fillStyle = '#1f2937';
             ctx.font = 'bold 32px Arial, sans-serif';
             ctx.textAlign = 'left';
             const title = 'Dent Analysis Report';
             ctx.fillText(title, padding, headerY + 30);
 
-            // Subtitle with date
             ctx.fillStyle = '#6b7280';
             ctx.font = '18px Arial, sans-serif';
             const date = new Date().toLocaleDateString('en-US', {
@@ -787,7 +754,6 @@ const DentDetection = () => {
             });
             ctx.fillText(`Generated on ${date}`, padding, headerY + 60);
 
-            // Company branding (top right)
             ctx.fillStyle = '#f97316';
             ctx.font = 'bold 24px Arial, sans-serif';
             ctx.textAlign = 'right';
@@ -797,7 +763,6 @@ const DentDetection = () => {
             ctx.font = '14px Arial, sans-serif';
             ctx.fillText('Professional Dent Analysis Solution', canvas.width - padding, headerY + 50);
 
-            // Draw separator line
             ctx.strokeStyle = '#e5e7eb';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -805,11 +770,9 @@ const DentDetection = () => {
             ctx.lineTo(canvas.width - padding, headerY + 75);
             ctx.stroke();
 
-            // Draw the original image
             const imageY = headerY + headerHeight;
             ctx.drawImage(img, padding, imageY);
 
-            // Draw dent overlays on the image
             Object.entries(getAllActiveDents()).forEach(([id, dent]) => {
                 const category = DENT_CATEGORIES[dent.category];
                 if (!category) return;
@@ -827,17 +790,14 @@ const DentDetection = () => {
                     img.naturalHeight - expandedYSize
                 ));
 
-                // Draw dent rectangle
                 ctx.strokeStyle = category.color;
                 ctx.lineWidth = 4;
                 ctx.setLineDash([]);
                 ctx.strokeRect(left, top, expandedXSize, expandedYSize);
 
-                // Fill with semi-transparent color
                 ctx.fillStyle = `${category.color}40`;
                 ctx.fillRect(left, top, expandedXSize, expandedYSize);
 
-                // Draw center point
                 ctx.beginPath();
                 ctx.arc(padding + dent.center.x, imageY + dent.center.y, 8, 0, 2 * Math.PI);
                 ctx.fillStyle = category.color;
@@ -846,7 +806,6 @@ const DentDetection = () => {
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Draw label with better styling
                 const labelText = `${category.label}`;
                 ctx.font = 'bold 16px Arial, sans-serif';
                 ctx.fillStyle = 'white';
@@ -858,14 +817,12 @@ const DentDetection = () => {
                 const labelX = Math.max(padding + 5, Math.min(left, canvas.width - textMetrics.width - 15));
                 const labelY = Math.max(imageY + 25, top - 8);
 
-                // Label background
                 ctx.fillStyle = category.color;
                 ctx.fillRect(labelX - 5, labelY - 18, textMetrics.width + 10, 22);
 
                 ctx.fillStyle = 'white';
                 ctx.fillText(labelText, labelX, labelY);
 
-                // Draw coordinates and dimensions
                 const coordText = `(${Math.round(dent.center.x)}, ${Math.round(dent.center.y)})`;
                 const dimText = `${Math.round(dent.x_size)}×${Math.round(dent.y_size)}px`;
 
@@ -877,17 +834,14 @@ const DentDetection = () => {
                 ctx.fillText(dimText, labelX, coordY + 15);
             });
 
-            // Footer with summary and branding
             const footerY = canvas.height - footerHeight;
 
-            // Summary statistics
             ctx.fillStyle = '#374151';
             ctx.font = 'bold 18px Arial, sans-serif';
             ctx.textAlign = 'left';
             const totalDents = Object.keys(getAllActiveDents()).length;
             ctx.fillText(`Total Dents Found: ${totalDents}`, padding, footerY + 25);
 
-            // Category breakdown
             const dentCounts = Object.values(getAllActiveDents()).reduce((acc, dent) => {
                 acc[dent.category] = (acc[dent.category] || 0) + 1;
                 return acc;
@@ -902,7 +856,6 @@ const DentDetection = () => {
             });
             ctx.fillText(breakdownText, padding, footerY + 45);
 
-            // Footer branding
             ctx.fillStyle = '#9ca3af';
             ctx.font = '12px Arial, sans-serif';
             ctx.textAlign = 'right';
@@ -916,7 +869,6 @@ const DentDetection = () => {
         try {
             const filesToDownload = [];
 
-            // Prepare JSON data
             if (options.json) {
                 const allDents = getAllActiveDents();
 
@@ -934,7 +886,6 @@ const DentDetection = () => {
                 filesToDownload.push({ blob: jsonBlob, filename: `${filename}.json` });
             }
 
-            // Create annotated image
             if (options.annotatedImage) {
                 const annotatedBlob = await createAnnotatedImage();
                 if (annotatedBlob) {
@@ -942,7 +893,6 @@ const DentDetection = () => {
                 }
             }
 
-            // Add original image
             if (options.originalImage && selectedImage) {
                 try {
                     const response = await fetch(selectedImage);
@@ -954,9 +904,7 @@ const DentDetection = () => {
                 }
             }
 
-            // Download files
             if (filesToDownload.length === 1) {
-                // Single file download
                 const { blob, filename: fileName } = filesToDownload[0];
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -967,7 +915,6 @@ const DentDetection = () => {
                 URL.revokeObjectURL(url);
                 document.body.removeChild(a);
             } else if (filesToDownload.length > 1) {
-                // Multiple files - create ZIP
                 const JSZip = await import('https://cdn.skypack.dev/jszip');
                 const zip = new JSZip.default();
 
@@ -992,25 +939,21 @@ const DentDetection = () => {
         }
     };
 
-    // Helper function to get all active dents (combining AI, modified AI, and manual)
     const getAllActiveDents = () => {
         const activeDents = {};
 
-        // Add AI dents that haven't been deleted or modified
         Object.entries(aiDents).forEach(([id, dent]) => {
             if (!deletedDents.has(id) && !modifiedAiDents[id]) {
                 activeDents[id] = dent;
             }
         });
 
-        // Add modified AI dents that haven't been deleted
         Object.entries(modifiedAiDents).forEach(([id, dent]) => {
             if (!deletedDents.has(id)) {
                 activeDents[id] = dent;
             }
         });
 
-        // Add manual dents
         Object.entries(manualDents).forEach(([id, dent]) => {
             activeDents[id] = dent;
         });
@@ -1018,7 +961,6 @@ const DentDetection = () => {
         return activeDents;
     };
 
-    // Helper function to get current dent data for a specific ID
     const getCurrentDentData = (dentId) => {
         if (dentId.startsWith('manual-')) {
             return manualDents[dentId];
@@ -1029,7 +971,6 @@ const DentDetection = () => {
         }
     };
 
-    // Helper function to check if a dent is AI-detected
     const isAIDent = (dentId) => {
         return !dentId.startsWith('manual-');
     };
@@ -1137,11 +1078,9 @@ const DentDetection = () => {
     };
 
     const handleFinishDrawing = async () => {
-        // Auto-save functionality could be implemented here if needed
         console.log("Drawing finished, auto-saving...");
     };
 
-    // Get all active dents and calculate stats
     const allActiveDents = getAllActiveDents();
     const dentCounts = Object.values(allActiveDents).reduce((acc, dent) => {
         acc[dent.category] = (acc[dent.category] || 0) + 1;
@@ -1177,7 +1116,6 @@ const DentDetection = () => {
                     <h2 className="text-xl lg:text-2xl font-semibold mb-2">Results Summary</h2>
                     <p className="text-2xl lg:text-3xl font-bold text-orange-600">{totalDents} Dents</p>
 
-                    {/* AI Disclaimer - Always visible */}
                     <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
                         <p className="text-xs text-amber-700 text-center">
                             AI can make mistakes, ensure you use your own discretion
@@ -1368,9 +1306,7 @@ const DentDetection = () => {
 
             <div className="flex-1 p-4 lg:p-6 order-1 lg:order-2 min-h-screen lg:min-h-0">
                 <div className="bg-white rounded-xl shadow-xl p-4 lg:p-6 h-full flex flex-col min-h-[70vh] lg:min-h-0">
-                    {/* Header Section */}
                     <div className="mb-4 lg:mb-6 space-y-4">
-                        {/* Top Row - Main Actions */}
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                                 <button
@@ -1409,7 +1345,6 @@ const DentDetection = () => {
                                 )}
                             </div>
 
-                            {/* Control Buttons */}
                             <div className="flex flex-wrap items-center gap-2 lg:gap-3">
                                 <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
                                     <button
@@ -1447,7 +1382,6 @@ const DentDetection = () => {
                             </div>
                         </div>
 
-                        {/* Annotation Mode Bar */}
                         {isDrawingMode && (
                             <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 shadow-sm">
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -1490,7 +1424,6 @@ const DentDetection = () => {
                             </div>
                         )}
 
-                        {/* Mobile Notice (only when not in drawing mode) */}
                         {!isDrawingMode && (
                             <div className="sm:hidden p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <p className="text-xs text-blue-700">
