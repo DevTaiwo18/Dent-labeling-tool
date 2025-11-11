@@ -310,7 +310,7 @@ const ExportModal = ({ isOpen, onClose, onExport, isBatch, imageCount, panelData
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">Export Format</label>
                         <div className="space-y-3">
-                            <div 
+                            <div
                                 className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${format === 'pdf' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
                                 onClick={() => setFormat('pdf')}
                             >
@@ -323,7 +323,7 @@ const ExportModal = ({ isOpen, onClose, onExport, isBatch, imageCount, panelData
                                 </div>
                             </div>
 
-                            <div 
+                            <div
                                 className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${format === 'zip' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
                                 onClick={() => setFormat('zip')}
                             >
@@ -531,8 +531,6 @@ const PanelResultsView = ({ panelData, onSelectPanel, onExportAll, onClearAll })
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {Object.entries(panelData).map(([panel, data]) => {
-                    const avgSize = data.averageDentSize;
-                    
                     return (
                         <div key={panel} className="bg-white rounded-lg border-2 border-gray-200 p-5 hover:border-orange-500 cursor-pointer transition-all shadow-sm hover:shadow-lg" onClick={() => onSelectPanel(panel)}>
                             <div className="flex items-start justify-between mb-4">
@@ -551,14 +549,10 @@ const PanelResultsView = ({ panelData, onSelectPanel, onExportAll, onClearAll })
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="mb-4">
                                 <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1">Avg Dent Size</div>
-                                    <div className="font-semibold text-gray-800">{avgSize.toFixed(1)}px</div>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1">Category</div>
-                                    <div className="font-semibold text-gray-800">{data.topCategory || 'N/A'}</div>
+                                    <div className="text-xs text-gray-500 mb-1">Most Common Dent Type</div>
+                                    <div className="font-semibold text-gray-800 text-lg">{data.averageDentSize || 'N/A'}</div>
                                 </div>
                             </div>
 
@@ -694,25 +688,23 @@ export default function DentDetection() {
 
         const allDents = results.flatMap(r => Object.values(r.dents));
         const totalDents = allDents.length;
-        const avgSize = totalDents > 0 
-            ? allDents.reduce((sum, dent) => sum + Math.sqrt(dent.x_size * dent.y_size), 0) / totalDents 
-            : 0;
 
         const dentsByCategory = allDents.reduce((acc, dent) => {
             acc[dent.category] = (acc[dent.category] || 0) + 1;
             return acc;
         }, {});
 
-        const topCategory = Object.entries(dentsByCategory).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topCategoryKey = Object.entries(dentsByCategory).sort((a, b) => b[1] - a[1])[0]?.[0];
+        const topCategory = topCategoryKey ? DENT_CATEGORIES[topCategoryKey]?.label : 'N/A';
 
         setPanelData(prev => ({
             ...prev,
             [panel]: {
                 images: results,
                 totalDents,
-                averageDentSize: avgSize,
+                averageDentSize: topCategory,
                 dentsByCategory,
-                topCategory: DENT_CATEGORIES[topCategory]?.label
+                topCategory: topCategory
             }
         }));
 
@@ -834,13 +826,18 @@ export default function DentDetection() {
                     newData[selectedPanelForGrid].images[selectedImageIndex].dents = updatedDents;
                     const allDents = newData[selectedPanelForGrid].images.flatMap(img => Object.values(img.dents));
                     newData[selectedPanelForGrid].totalDents = allDents.length;
-                    newData[selectedPanelForGrid].averageDentSize = allDents.length > 0
-                        ? allDents.reduce((sum, dent) => sum + Math.sqrt(dent.x_size * dent.y_size), 0) / allDents.length
-                        : 0;
-                    newData[selectedPanelForGrid].dentsByCategory = allDents.reduce((acc, dent) => {
+
+                    const dentsByCategory = allDents.reduce((acc, dent) => {
                         acc[dent.category] = (acc[dent.category] || 0) + 1;
                         return acc;
                     }, {});
+
+                    const topCategoryKey = Object.entries(dentsByCategory).sort((a, b) => b[1] - a[1])[0]?.[0];
+                    const topCategory = topCategoryKey ? DENT_CATEGORIES[topCategoryKey]?.label : 'N/A';
+
+                    newData[selectedPanelForGrid].averageDentSize = topCategory;
+                    newData[selectedPanelForGrid].dentsByCategory = dentsByCategory;
+                    newData[selectedPanelForGrid].topCategory = topCategory;
                 }
                 return newData;
             });
@@ -930,7 +927,7 @@ export default function DentDetection() {
                     subject: 'Hail Damage Inspection Report by Panel',
                     creator: 'OBAI Dent Detection System'
                 },
-                header: function(currentPage, pageCount, pageSize) {
+                header: function (currentPage, pageCount, pageSize) {
                     return {
                         columns: [
                             { text: '', width: '*' },
@@ -938,7 +935,7 @@ export default function DentDetection() {
                         ]
                     };
                 },
-                footer: function(currentPage, pageCount) {
+                footer: function (currentPage, pageCount) {
                     return {
                         columns: [
                             { text: 'OBAI Hail Damage Panel Analysis', alignment: 'left', fontSize: 8, color: '#666', margin: [40, 20, 0, 0] },
@@ -952,91 +949,91 @@ export default function DentDetection() {
                             {
                                 width: '60%',
                                 stack: [
-                                    { text: 'HAIL DAMAGE', fontSize: 28, bold: true, color: '#1f2937', margin: [0, 0, 0, 5] },
-                                    { text: 'PANEL ANALYSIS REPORT', fontSize: 28, bold: true, color: '#f97316', margin: [0, 0, 0, 10] }
+                                    { text: 'HAIL DAMAGE', fontSize: 24, bold: true, color: '#1f2937', margin: [0, 0, 0, 3] },
+                                    { text: 'PANEL ANALYSIS REPORT', fontSize: 24, bold: true, color: '#f97316', margin: [0, 0, 0, 8] }
                                 ]
                             },
                             {
                                 width: '40%',
                                 stack: [
-                                    logoDataUrl && { image: logoDataUrl, fit: [120, 40], alignment: 'right', margin: [0, 0, 0, 10] }
+                                    logoDataUrl && { image: logoDataUrl, fit: [100, 35], alignment: 'right', margin: [0, 0, 0, 8] }
                                 ]
                             }
                         ],
-                        margin: [0, 0, 0, 20]
+                        margin: [0, 0, 0, 15]
                     },
-                    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 2, lineColor: '#f97316' }], margin: [0, 0, 0, 20] },
-                    
+                    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 2, lineColor: '#f97316' }], margin: [0, 0, 0, 15] },
+
                     {
                         columns: [
                             {
                                 width: '33%',
                                 stack: [
-                                    { text: 'Report Information', fontSize: 10, bold: true, color: '#6b7280', margin: [0, 0, 0, 8] },
-                                    { text: `Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, fontSize: 9, margin: [0, 0, 0, 4] },
-                                    { text: `Time: ${new Date().toLocaleTimeString('en-US')}`, fontSize: 9, margin: [0, 0, 0, 4] }
+                                    { text: 'Report Information', fontSize: 9, bold: true, color: '#6b7280', margin: [0, 0, 0, 5] },
+                                    { text: `Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, fontSize: 8, margin: [0, 0, 0, 3] },
+                                    { text: `Time: ${new Date().toLocaleTimeString('en-US')}`, fontSize: 8, margin: [0, 0, 0, 3] }
                                 ]
                             },
                             {
                                 width: '34%',
                                 stack: [
-                                    { text: 'Analysis Summary', fontSize: 10, bold: true, color: '#6b7280', margin: [0, 0, 0, 8] },
-                                    { text: `Panels: ${totalPanels}`, fontSize: 9, margin: [0, 0, 0, 4] },
-                                    { text: `Images: ${totalImages}`, fontSize: 9, margin: [0, 0, 0, 4] }
+                                    { text: 'Analysis Summary', fontSize: 9, bold: true, color: '#6b7280', margin: [0, 0, 0, 5] },
+                                    { text: `Panels: ${totalPanels}`, fontSize: 8, margin: [0, 0, 0, 3] },
+                                    { text: `Images: ${totalImages}`, fontSize: 8, margin: [0, 0, 0, 3] }
                                 ]
                             },
                             {
                                 width: '33%',
                                 stack: [
-                                    { text: 'Total Damage', fontSize: 10, bold: true, color: '#6b7280', margin: [0, 0, 0, 8] },
-                                    { text: `${totalDents} Dents`, fontSize: 16, bold: true, color: '#f97316', margin: [0, 0, 0, 4] }
+                                    { text: 'Total Damage', fontSize: 9, bold: true, color: '#6b7280', margin: [0, 0, 0, 5] },
+                                    { text: `${totalDents} Dents`, fontSize: 14, bold: true, color: '#f97316', margin: [0, 0, 0, 3] }
                                 ]
                             }
                         ],
-                        margin: [0, 0, 0, 30]
+                        margin: [0, 0, 0, 20]
                     },
 
-                    { text: 'PANEL BREAKDOWN', fontSize: 14, bold: true, color: '#1f2937', margin: [0, 0, 0, 15] },
+                    { text: 'PANEL BREAKDOWN', fontSize: 12, bold: true, color: '#1f2937', margin: [0, 0, 0, 10] },
                     {
                         table: {
                             headerRows: 1,
                             widths: ['*', 'auto', 'auto', 'auto'],
                             body: [
                                 [
-                                    { text: 'Panel', bold: true, fontSize: 10, fillColor: '#f3f4f6', color: '#1f2937' },
-                                    { text: 'Images', bold: true, fontSize: 10, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' },
-                                    { text: 'Dents', bold: true, fontSize: 10, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' },
-                                    { text: 'Avg Size (px)', bold: true, fontSize: 10, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' }
+                                    { text: 'Panel', bold: true, fontSize: 9, fillColor: '#f3f4f6', color: '#1f2937' },
+                                    { text: 'Images', bold: true, fontSize: 9, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' },
+                                    { text: 'Dents', bold: true, fontSize: 9, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' },
+                                    { text: 'Most Common', bold: true, fontSize: 9, fillColor: '#f3f4f6', color: '#1f2937', alignment: 'center' }
                                 ],
                                 ...Object.entries(panelData).map(([panel, data]) => [
-                                    { text: panel, fontSize: 9 },
-                                    { text: data.images.length.toString(), fontSize: 9, alignment: 'center' },
-                                    { text: data.totalDents.toString(), fontSize: 9, alignment: 'center', bold: true, color: '#f97316' },
-                                    { text: data.averageDentSize.toFixed(1), fontSize: 9, alignment: 'center' }
+                                    { text: panel, fontSize: 8 },
+                                    { text: data.images.length.toString(), fontSize: 8, alignment: 'center' },
+                                    { text: data.totalDents.toString(), fontSize: 8, alignment: 'center', bold: true, color: '#f97316' },
+                                    { text: data.averageDentSize || 'N/A', fontSize: 8, alignment: 'center' }
                                 ]),
                                 [
-                                    { text: 'TOTAL', bold: true, fontSize: 10, fillColor: '#fef3c7' },
-                                    { text: totalImages.toString(), bold: true, fontSize: 10, fillColor: '#fef3c7', alignment: 'center' },
-                                    { text: totalDents.toString(), bold: true, fontSize: 10, fillColor: '#fef3c7', alignment: 'center', color: '#f97316' },
-                                    { text: '-', bold: true, fontSize: 10, fillColor: '#fef3c7', alignment: 'center' }
+                                    { text: 'TOTAL', bold: true, fontSize: 9, fillColor: '#fef3c7' },
+                                    { text: totalImages.toString(), bold: true, fontSize: 9, fillColor: '#fef3c7', alignment: 'center' },
+                                    { text: totalDents.toString(), bold: true, fontSize: 9, fillColor: '#fef3c7', alignment: 'center', color: '#f97316' },
+                                    { text: '-', bold: true, fontSize: 9, fillColor: '#fef3c7', alignment: 'center' }
                                 ]
                             ]
                         },
                         layout: {
-                            hLineWidth: () => 1,
-                            vLineWidth: () => 1,
+                            hLineWidth: () => 0.5,
+                            vLineWidth: () => 0.5,
                             hLineColor: () => '#e5e7eb',
                             vLineColor: () => '#e5e7eb',
-                            paddingLeft: () => 8,
-                            paddingRight: () => 8,
-                            paddingTop: () => 6,
-                            paddingBottom: () => 6
+                            paddingLeft: () => 6,
+                            paddingRight: () => 6,
+                            paddingTop: () => 4,
+                            paddingBottom: () => 4
                         },
-                        margin: [0, 0, 0, 30]
+                        margin: [0, 0, 0, 20]
                     },
 
-                    { text: 'DETAILED PANEL ANALYSIS', fontSize: 14, bold: true, color: '#1f2937', margin: [0, 0, 0, 15], pageBreak: 'before' },
-                    ...Object.entries(panelData).map(([panel, data]) => ({
+                    { text: 'DETAILED PANEL ANALYSIS', fontSize: 12, bold: true, color: '#1f2937', margin: [0, 0, 0, 10] },
+                    ...Object.entries(panelData).map(([panel, data], index) => ({
                         stack: [
                             {
                                 table: {
@@ -1044,26 +1041,26 @@ export default function DentDetection() {
                                     body: [
                                         [{
                                             stack: [
-                                                { text: panel, fontSize: 12, bold: true, color: '#1f2937', margin: [0, 0, 0, 8] },
+                                                { text: panel, fontSize: 11, bold: true, color: '#1f2937', margin: [0, 0, 0, 6] },
                                                 {
                                                     columns: [
                                                         {
                                                             width: '50%',
                                                             stack: [
-                                                                { text: `Total Dents: ${data.totalDents}`, fontSize: 10, color: '#f97316', bold: true, margin: [0, 0, 0, 4] },
-                                                                { text: `Images: ${data.images.length}`, fontSize: 9, color: '#4b5563', margin: [0, 0, 0, 4] },
-                                                                { text: `Avg Dent Size: ${data.averageDentSize.toFixed(1)}px`, fontSize: 9, color: '#4b5563' }
+                                                                { text: `Total Dents: ${data.totalDents}`, fontSize: 9, color: '#f97316', bold: true, margin: [0, 0, 0, 3] },
+                                                                { text: `Images: ${data.images.length}`, fontSize: 8, color: '#4b5563', margin: [0, 0, 0, 3] },
+                                                                { text: `Most Common: ${data.averageDentSize}`, fontSize: 8, color: '#4b5563' }
                                                             ]
                                                         },
                                                         {
                                                             width: '50%',
                                                             stack: [
-                                                                { text: 'Category Breakdown:', fontSize: 9, bold: true, color: '#4b5563', margin: [0, 0, 0, 4] },
+                                                                { text: 'Category Breakdown:', fontSize: 8, bold: true, color: '#4b5563', margin: [0, 0, 0, 3] },
                                                                 ...Object.entries(data.dentsByCategory).map(([cat, count]) => ({
                                                                     text: `• ${DENT_CATEGORIES[cat]?.label}: ${count}`,
-                                                                    fontSize: 8,
+                                                                    fontSize: 7,
                                                                     color: '#6b7280',
-                                                                    margin: [0, 0, 0, 2]
+                                                                    margin: [0, 0, 0, 1]
                                                                 }))
                                                             ]
                                                         }
@@ -1071,40 +1068,39 @@ export default function DentDetection() {
                                                 }
                                             ],
                                             fillColor: '#f9fafb',
-                                            margin: [10, 10, 10, 10]
+                                            margin: [8, 8, 8, 8]
                                         }]
                                     ]
                                 },
                                 layout: {
-                                    hLineWidth: () => 1,
-                                    vLineWidth: () => 1,
+                                    hLineWidth: () => 0.5,
+                                    vLineWidth: () => 0.5,
                                     hLineColor: () => '#e5e7eb',
                                     vLineColor: () => '#e5e7eb'
                                 },
-                                margin: [0, 0, 0, 15]
+                                margin: [0, 0, 0, 8]
                             }
                         ]
                     })),
 
-                    { 
-                        text: 'DISCLAIMER', 
-                        fontSize: 12, 
-                        bold: true, 
-                        color: '#1f2937', 
-                        margin: [0, 30, 0, 10], 
-                        pageBreak: 'before' 
+                    {
+                        text: 'DISCLAIMER',
+                        fontSize: 10,
+                        bold: true,
+                        color: '#1f2937',
+                        margin: [0, 15, 0, 8]
                     },
-                    { 
-                        text: 'This report is generated by OBAI\'s AI-powered dent detection system. All dent counts, categorizations, and measurements are based on automated analysis and should be verified by a professional inspector. The information provided is for assessment purposes only and does not constitute a final damage evaluation. Average dent sizes are calculated based on pixel dimensions and may vary based on image resolution.', 
-                        fontSize: 8, 
-                        color: '#6b7280', 
+                    {
+                        text: 'This report is generated by OBAI\'s AI-powered dent detection system. All dent counts, categorizations, and measurements are based on automated analysis and should be verified by a professional inspector. The information provided is for assessment purposes only and does not constitute a final damage evaluation.',
+                        fontSize: 7,
+                        color: '#6b7280',
                         italics: true,
-                        margin: [0, 0, 0, 20]
+                        margin: [0, 0, 0, 15]
                     },
                     {
                         columns: [
-                            { text: '© 2024 OBAI. All rights reserved.', fontSize: 8, color: '#9ca3af', alignment: 'left' },
-                            { text: 'Professional Panel-Based Dent Analysis', fontSize: 8, color: '#9ca3af', alignment: 'right' }
+                            { text: '© 2024 OBAI. All rights reserved.', fontSize: 7, color: '#9ca3af', alignment: 'left' },
+                            { text: 'Professional Panel-Based Dent Analysis', fontSize: 7, color: '#9ca3af', alignment: 'right' }
                         ]
                     }
                 ]
@@ -1145,7 +1141,7 @@ export default function DentDetection() {
 
             Object.entries(panelData).forEach(([panel, data]) => {
                 const panelFolder = zip.folder(panel.replace(/[/\\]/g, '_'));
-                
+
                 const panelSummary = {
                     panel_name: panel,
                     total_dents: data.totalDents,
@@ -1158,7 +1154,7 @@ export default function DentDetection() {
                         dent_count: Object.keys(img.dents).length
                     }))
                 };
-                
+
                 panelFolder.file('panel_summary.json', JSON.stringify(panelSummary, null, 2));
 
                 data.images.forEach(img => {
@@ -1174,12 +1170,12 @@ export default function DentDetection() {
                 });
             });
 
-            const zipBlob = await zip.generateAsync({ 
+            const zipBlob = await zip.generateAsync({
                 type: 'blob',
                 compression: 'DEFLATE',
                 compressionOptions: { level: 9 }
             });
-            
+
             const url = URL.createObjectURL(zipBlob);
             const a = document.createElement('a');
             a.href = url;
@@ -1211,7 +1207,7 @@ export default function DentDetection() {
                                 dents: getAllActiveDents()
                             }],
                             totalDents: Object.keys(getAllActiveDents()).length,
-                            averageDentSize: Object.values(getAllActiveDents()).reduce((sum, dent) => 
+                            averageDentSize: Object.values(getAllActiveDents()).reduce((sum, dent) =>
                                 sum + Math.sqrt(dent.x_size * dent.y_size), 0) / Object.keys(getAllActiveDents()).length || 0,
                             dentsByCategory: Object.values(getAllActiveDents()).reduce((acc, dent) => {
                                 acc[dent.category] = (acc[dent.category] || 0) + 1;
@@ -1310,7 +1306,7 @@ export default function DentDetection() {
 
     const currentSelectedDent = selectedDent ? (
         selectedDent.startsWith('manual-') ? manualDents[selectedDent] :
-        modifiedAiDents[selectedDent] || aiDents[selectedDent]
+            modifiedAiDents[selectedDent] || aiDents[selectedDent]
     ) : null;
 
     const handleMouseDown = useCallback((e) => {
@@ -1384,21 +1380,21 @@ export default function DentDetection() {
         return (
             <div className="min-h-screen bg-gray-50 p-6">
                 <BatchProcessingModal isOpen={isBatchProcessing} processedCount={batchProgress.processed} totalCount={batchProgress.total} currentFile={batchProgress.currentFile} failedFiles={batchFailedFiles} />
-                <ExportModal 
-                    isOpen={showExportModal} 
-                    onClose={() => setShowExportModal(false)} 
-                    onExport={handleExport} 
-                    isBatch={true} 
+                <ExportModal
+                    isOpen={showExportModal}
+                    onClose={() => setShowExportModal(false)}
+                    onExport={handleExport}
+                    isBatch={true}
                     imageCount={Object.values(panelData).reduce((sum, data) => sum + data.images.length, 0)}
                     panelData={panelData}
                 />
-                <PanelSelectionModal 
-                    isOpen={showPanelModal} 
+                <PanelSelectionModal
+                    isOpen={showPanelModal}
                     onClose={() => {
                         setShowPanelModal(false);
                         setPendingFiles([]);
-                    }} 
-                    onSelect={handlePanelSelect} 
+                    }}
+                    onSelect={handlePanelSelect}
                 />
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-6 flex items-center gap-4">
@@ -1407,15 +1403,15 @@ export default function DentDetection() {
                         </button>
                         <input ref={folderInputRef} type="file" multiple webkitdirectory="" directory="" accept="image/*" onChange={handleFolderUpload} className="hidden" />
                     </div>
-                    <PanelResultsView 
+                    <PanelResultsView
                         panelData={panelData}
                         onSelectPanel={handlePanelClick}
-                        onExportAll={() => setShowExportModal(true)} 
+                        onExportAll={() => setShowExportModal(true)}
                         onClearAll={() => {
                             setPanelData({});
                             setPanelMode(false);
                             setShowPanelResults(false);
-                        }} 
+                        }}
                     />
                 </div>
             </div>
@@ -1430,22 +1426,22 @@ export default function DentDetection() {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <InstructionModal isOpen={showInstructionModal} onClose={() => setShowInstructionModal(false)} onDontShowAgain={() => { setHideInstructions(true); localStorage.setItem('hideDentInstructions', 'true'); }} onStartAnnotating={startDrawingMode} />
-            <ExportModal 
-                isOpen={showExportModal} 
-                onClose={() => setShowExportModal(false)} 
-                onExport={handleExport} 
-                isBatch={panelMode} 
+            <ExportModal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                onExport={handleExport}
+                isBatch={panelMode}
                 imageCount={panelMode ? Object.values(panelData).reduce((sum, data) => sum + data.images.length, 0) : 1}
                 panelData={panelMode ? panelData : null}
             />
             <BatchProcessingModal isOpen={isBatchProcessing} processedCount={batchProgress.processed} totalCount={batchProgress.total} currentFile={batchProgress.currentFile} failedFiles={batchFailedFiles} />
-            <PanelSelectionModal 
-                isOpen={showPanelModal} 
+            <PanelSelectionModal
+                isOpen={showPanelModal}
                 onClose={() => {
                     setShowPanelModal(false);
                     setPendingFiles([]);
-                }} 
-                onSelect={handlePanelSelect} 
+                }}
+                onSelect={handlePanelSelect}
             />
 
             {/* Special header when editing from grid */}
@@ -1617,7 +1613,7 @@ export default function DentDetection() {
                                         <ArrowLeft className="w-5 h-5" />Back to Panels
                                     </button>
                                 )}
-                                
+
                                 {!isEditingGridImage && (
                                     <>
                                         <button onClick={() => fileInputRef.current.click()} disabled={isLoading} className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white px-6 py-3 rounded-lg flex items-center gap-3 font-medium shadow-md transition-all">
@@ -1721,7 +1717,7 @@ export default function DentDetection() {
                                     position={position}
                                     onAddDent={handleAddDent}
                                     currentCategory={selectedCategory}
-                                    onFinishDrawing={() => {}}
+                                    onFinishDrawing={() => { }}
                                 />
                             )}
 
